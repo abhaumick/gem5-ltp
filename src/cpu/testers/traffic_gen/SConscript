@@ -54,9 +54,9 @@ Source('strided_gen.cc')
 DebugFlag('TrafficGen')
 SimObject('BaseTrafficGen.py')
 
-if env['USE_PYTHON']:
-    Source('pygen.cc', add_tags='python')
-    SimObject('PyTrafficGen.py')
+#if env['USE_PYTHON']:
+#    Source('pygen.cc', add_tags='python')
+#    SimObject('PyTrafficGen.py')
 
 # Only build the traffic generator if we have support for protobuf as the
 # tracing relies on it

@@ -441,32 +441,32 @@ have_pkg_config = main.Detect('pkg-config')
 
 # Check for the protobuf compiler
 main['HAVE_PROTOC'] = False
-protoc_version = []
-try:
-    protoc_version = readCommand([main['PROTOC'], '--version']).split()
-except Exception as e:
-    warning('While checking protoc version:', str(e))
+#protoc_version = []
+#try:
+#    protoc_version = readCommand([main['PROTOC'], '--version']).split()
+#except Exception as e:
+#    warning('While checking protoc version:', str(e))
 
 # Based on the availability of the compress stream wrappers, require 2.1.0.
-min_protoc_version = '2.1.0'
+#min_protoc_version = '2.1.0'
 
 # First two words should be "libprotoc x.y.z"
-if len(protoc_version) < 2 or protoc_version[0] != 'libprotoc':
-    warning('Protocol buffer compiler (protoc) not found.\n'
+#if len(protoc_version) < 2 or protoc_version[0] != 'libprotoc':
+warning('Protocol buffer compiler (protoc) not found.\n'
             'Please install protobuf-compiler for tracing support.')
-elif compareVersions(protoc_version[1], min_protoc_version) < 0:
-    warning('protoc version', min_protoc_version, 'or newer required.\n'
-            'Installed version:', protoc_version[1])
-else:
+#elif compareVersions(protoc_version[1], min_protoc_version) < 0:
+#    warning('protoc version', min_protoc_version, 'or newer required.\n'
+#            'Installed version:', protoc_version[1])
+#else:
     # Attempt to determine the appropriate include path and
     # library path using pkg-config, that means we also need to
     # check for pkg-config. Note that it is possible to use
     # protobuf without the involvement of pkg-config. Later on we
     # check go a library config check and at that point the test
     # will fail if libprotobuf cannot be found.
-    if have_pkg_config:
-        conf.CheckPkgConfig('protobuf', '--cflags', '--libs-only-L')
-    main['HAVE_PROTOC'] = True
+#    if have_pkg_config:
+#        conf.CheckPkgConfig('protobuf', '--cflags', '--libs-only-L')
+#    main['HAVE_PROTOC'] = False
 
 
 
@@ -695,11 +695,12 @@ if have_pkg_config:
 # include path and library path provided by pkg-config. We perform
 # this check even if there isn't a pkg-config configuration for hdf5
 # since some installations don't use pkg-config.
-have_hdf5 = \
-        conf.CheckLibWithHeader('hdf5', 'hdf5.h', 'C',
-                                'H5Fcreate("", 0, 0, 0);') and \
-        conf.CheckLibWithHeader('hdf5_cpp', 'H5Cpp.h', 'C++',
-                                'H5::H5File("", 0);')
+have_hdf5 = False
+#\
+#        conf.CheckLibWithHeader('hdf5', 'hdf5.h', 'C',
+#                                'H5Fcreate("", 0, 0, 0);') and \
+#        conf.CheckLibWithHeader('hdf5_cpp', 'H5Cpp.h', 'C++',
+#                                'H5::H5File("", 0);')
 if not have_hdf5:
     warning("Couldn't find any HDF5 C++ libraries. Disabling HDF5 support.")
 
