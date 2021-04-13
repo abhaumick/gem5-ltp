@@ -316,3 +316,12 @@ website:
   maintainers:
     - Bobby Bruce <bbruce@ucdavis.edu>
     - Hoa Nguyen <hoanguyen@ucdavis.edu>
+
+ltp:
+  desc: >-
+    The ECE666 gem5 project group
+  status: maintained
+  maintainers:
+    - Abhishek Bhaumick <abhaumic@purdue.edu>
+    - Raghav V <raghav0@purdue.edu>
+
