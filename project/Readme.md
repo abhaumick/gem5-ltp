@@ -1,5 +1,11 @@
 # Project Readme - Last Touch Prediction
 
+## Decisions
+
+- [ ] Make MSI with LTP-Invalidate
+- [ ] Decide L1 and L2 behavior
+- [ ] 
+
 ## Roadmap
 
 - [ ] Setup a Distributed Shared Memory architecture in Ruby 
