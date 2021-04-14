@@ -45,3 +45,18 @@
 - [ ] Detect incorrect “last-touch” due to low confidence predictions.
 
 
+## Micro Architecure
+-  Current Signature Table
+	- This tracks the current trace in progress. 
+	- This is a register per cache block.
+	- Needs a hashing algorithm ( truncated addition?)
+	- Same semantics as 'structure' in .sm file?
+	- Seman
+- Last Touch Signature Table
+	- Pag OR Pap Last Touch History Table	
+- Need to add an invalidate 'action'.
+	- Modify the state machine
+	- Modify corresponding actions.
+	- Semantics similiar to 'Replacement' Event in .sm file.
+	- Need to trigger when hit in last touch table.
+
