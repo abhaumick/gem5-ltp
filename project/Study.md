@@ -1,5 +1,16 @@
 # Study of Code
 
+
+### Protocol Selection
+- MESI Two level
+  - Ready but has l2 cache.
+  - Need to modify .sm files and corresponding .py files.
+  - Need to add an action for invalidate.
+
+#### Selected - MESI-Two-Level
+
+
+
 ## Requests
 
 http://doxygen.gem5.org/release/current/namespaceProbePoints.html
@@ -37,3 +48,4 @@ http://www.gem5.org/documentation/learning_gem5/part3/cache-intro/
 in_port(mandatory_in, RubyRequest, mandatoryQueue);
 
 ```
+
