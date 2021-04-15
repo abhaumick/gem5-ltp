@@ -22,6 +22,13 @@ rm -rf parsec-2.1-sim.tar.gz
 ./parsec-2.1//bin/parsecmgmt -a run -i simsmall -x pre
 ```
 
+## Alternate source
+
+https://www.cs.utexas.edu/~parsec_m5/
+
+check the provided linux.smp image and parsec2.1 image 
+> (might be prebuilt or not) 
+
 ## Build
 
 ```bash
