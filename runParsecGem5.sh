@@ -41,3 +41,10 @@ bm_args="${run_args}"
 gem5_cmd="${gem5_dir}/${gem5_opt} ${gem5_dir}/${gem5_config}"
 exec_cmd="${gem5_cmd} -n ${gem5_nCores} -c ${bm_run_exec} -o \"${run_args}\""
 eval ${exec_cmd}
+
+echo "Copying results to m5out"
+mkdir  ${gem5_dir}/m5out -v
+mkdir  ${gem5_dir}/m5out/${bm_name} -v
+mv ${run_path}/m5out/* ${gem5_dir}/m5out/${bm_name}/ -f -v
+echo " .. Done"
+echo ""
