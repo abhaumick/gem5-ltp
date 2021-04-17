@@ -40,7 +40,8 @@ class RubyCache(SimObject):
     is_icache = Param.Bool(False, "is instruction only cache");
     block_size = Param.MemorySize("0B", "block size in bytes. \
                                             0 means default RubyBlockSize");
-    has_traces = Param.Bool(False, "has records of acces traces")
+    has_traces = Param.Bool(False, "has records of acces traces");
+    cache_id = Param.Int(1, "unique id for a CacheMemory instance")
 
     dataArrayBanks = Param.Int(1, "Number of banks for the data array")
     tagArrayBanks = Param.Int(1, "Number of banks for the tag array")

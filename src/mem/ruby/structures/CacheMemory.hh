@@ -57,45 +57,10 @@
 #include "mem/ruby/slicc_interface/AbstractCacheEntry.hh"
 #include "mem/ruby/slicc_interface/RubySlicc_ComponentMapping.hh"
 #include "mem/ruby/structures/BankedArray.hh"
+#include "mem/ruby/structures/LastTouchPrediction.hh"
 #include "mem/ruby/system/CacheRecorder.hh"
 #include "params/RubyCache.hh"
 #include "sim/sim_object.hh"
-
-class LoggerLT : public Logger
-{
-  public:
-    using Logger::Logger;
-    LoggerLT(const char* prefix) : Logger(prefix)
-    {
-      // logFile.open("LogLTP.log", std::ofstream::out);
-    }
-
-    void setup()
-    {
-      logFile.open("LogLTP.log", std::ofstream::out);
-      if (logFile.is_open())
-        std::cout << "trace: logFile - Open Succesful \n";
-      else
-        std::cout << "trace: logFile - Open failed \n";
-    }
-
-    ~LoggerLT()
-    {
-      if (logFile.is_open())
-        logFile.close();
-    }
-
-
-  protected:
-    std::ofstream logFile;
-    void log(const Loc &loc, std::string s) override
-    {
-      logFile << s << std::flush;
-    }
-};
-
-#define traceLog(logger, ...) \
-  logger.print(::LoggerLT::Loc(__FILE__, __LINE__), __VA_ARGS__)
 
 class CacheMemory : public SimObject
 {
@@ -184,7 +149,11 @@ class CacheMemory : public SimObject
     void htmAbortTransaction();
     void htmCommitTransaction();
 
+    //  Last Touch Prediction (LTP)
     LoggerLT logLT;
+    void startTrace(Addr addr, int64_t pc);
+    void addToTrace(Addr addr, int64_t pc);  //  Determine Args
+    void endTrace(Addr addr, int64_t pc);
 
   public:
     int getCacheSize() const { return m_cache_size; }
@@ -228,6 +197,7 @@ class CacheMemory : public SimObject
     bool m_resource_stalls;
     int m_block_size;
     bool m_has_traces;
+    int m_cache_id;
 
     /**
      * We store all the ReplacementData in a 2-dimensional array. By doing

@@ -62,11 +62,11 @@ operator<<(std::ostream& out, const CacheMemory& obj)
 
 CacheMemory::CacheMemory(const Params &p)
     : SimObject(p),
+    logLT("trace: "),
     dataArray(p.dataArrayBanks, p.dataAccessLatency,
               p.start_index_bit, p.ruby_system),
     tagArray(p.tagArrayBanks, p.tagAccessLatency,
              p.start_index_bit, p.ruby_system),
-    logLT("trace: "),
     cacheMemoryStats(this)
 {
     m_cache_size = p.size;
@@ -75,8 +75,9 @@ CacheMemory::CacheMemory(const Params &p)
     m_start_index_bit = p.start_index_bit;
     m_is_instruction_only_cache = p.is_icache;
     m_has_traces = p.has_traces;
+    m_cache_id = p.cache_id;
     if (m_has_traces)
-        logLT.setup();
+        logLT.setup(m_cache_id);
     m_resource_stalls = p.resourceStalls;
     m_block_size = p.block_size;  // may be 0 at this point. Updated in init()
     m_use_occupancy = dynamic_cast<ReplacementPolicy::WeightedLRU*>(
@@ -742,6 +743,19 @@ CacheMemory::htmCommitTransaction()
     cacheMemoryStats.htmTransCommitWriteSet.sample(htmWriteSetSize);
     DPRINTF(HtmMem, "htmCommitTransaction: read set=%u write set=%u\n",
         htmReadSetSize, htmWriteSetSize);
+}
+
+void
+CacheMemory::startTrace(Addr addr, int64_t pc)
+{
+    assert(address == makeLineAddress(address));
+
+    int64_t cacheSet = addressToCacheSet(address);
+
+
+
+
+
 }
 
 void
