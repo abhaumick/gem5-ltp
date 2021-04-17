@@ -66,6 +66,7 @@ CacheMemory::CacheMemory(const Params &p)
               p.start_index_bit, p.ruby_system),
     tagArray(p.tagArrayBanks, p.tagAccessLatency,
              p.start_index_bit, p.ruby_system),
+    logLT("trace: "),
     cacheMemoryStats(this)
 {
     m_cache_size = p.size;
@@ -73,6 +74,9 @@ CacheMemory::CacheMemory(const Params &p)
     m_replacementPolicy_ptr = p.replacement_policy;
     m_start_index_bit = p.start_index_bit;
     m_is_instruction_only_cache = p.is_icache;
+    m_has_traces = p.has_traces;
+    if (m_has_traces)
+        logLT.setup();
     m_resource_stalls = p.resourceStalls;
     m_block_size = p.block_size;  // may be 0 at this point. Updated in init()
     m_use_occupancy = dynamic_cast<ReplacementPolicy::WeightedLRU*>(
@@ -101,10 +105,14 @@ CacheMemory::init()
                                 m_replacementPolicy_ptr->instantiateEntry();
         }
     }
+
+    traceLog(logLT, "Cache Memory Init\n");
 }
 
 CacheMemory::~CacheMemory()
 {
+    traceLog(logLT, "Cache Memory Destroyed\n");
+
     if (m_replacementPolicy_ptr)
         delete m_replacementPolicy_ptr;
     for (int i = 0; i < m_cache_num_sets; i++) {

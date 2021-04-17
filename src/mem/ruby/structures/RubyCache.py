@@ -38,7 +38,9 @@ class RubyCache(SimObject):
     replacement_policy = Param.BaseReplacementPolicy(TreePLRURP(), "")
     start_index_bit = Param.Int(6, "index start, default 6 for 64-byte line");
     is_icache = Param.Bool(False, "is instruction only cache");
-    block_size = Param.MemorySize("0B", "block size in bytes. 0 means default RubyBlockSize")
+    block_size = Param.MemorySize("0B", "block size in bytes. \
+                                            0 means default RubyBlockSize");
+    has_traces = Param.Bool(False, "has records of acces traces")
 
     dataArrayBanks = Param.Int(1, "Number of banks for the data array")
     tagArrayBanks = Param.Int(1, "Number of banks for the tag array")

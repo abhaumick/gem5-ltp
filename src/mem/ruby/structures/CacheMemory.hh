@@ -46,6 +46,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/logging.hh"
 #include "base/statistics.hh"
 #include "mem/cache/replacement_policies/base.hh"
 #include "mem/cache/replacement_policies/replaceable_entry.hh"
@@ -59,6 +60,42 @@
 #include "mem/ruby/system/CacheRecorder.hh"
 #include "params/RubyCache.hh"
 #include "sim/sim_object.hh"
+
+class LoggerLT : public Logger
+{
+  public:
+    using Logger::Logger;
+    LoggerLT(const char* prefix) : Logger(prefix)
+    {
+      // logFile.open("LogLTP.log", std::ofstream::out);
+    }
+
+    void setup()
+    {
+      logFile.open("LogLTP.log", std::ofstream::out);
+      if (logFile.is_open())
+        std::cout << "trace: logFile - Open Succesful \n";
+      else
+        std::cout << "trace: logFile - Open failed \n";
+    }
+
+    ~LoggerLT()
+    {
+      if (logFile.is_open())
+        logFile.close();
+    }
+
+
+  protected:
+    std::ofstream logFile;
+    void log(const Loc &loc, std::string s) override
+    {
+      logFile << s << std::flush;
+    }
+};
+
+#define traceLog(logger, ...) \
+  logger.print(::LoggerLT::Loc(__FILE__, __LINE__), __VA_ARGS__)
 
 class CacheMemory : public SimObject
 {
@@ -147,6 +184,8 @@ class CacheMemory : public SimObject
     void htmAbortTransaction();
     void htmCommitTransaction();
 
+    LoggerLT logLT;
+
   public:
     int getCacheSize() const { return m_cache_size; }
     int getCacheAssoc() const { return m_cache_assoc; }
@@ -188,6 +227,7 @@ class CacheMemory : public SimObject
     int m_start_index_bit;
     bool m_resource_stalls;
     int m_block_size;
+    bool m_has_traces;
 
     /**
      * We store all the ReplacementData in a 2-dimensional array. By doing
