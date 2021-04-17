@@ -76,7 +76,8 @@ def create_system(options, full_system, system, dma_ports, bootmem,
         l1d_cache = L1Cache(size = options.l1d_size,
                             assoc = options.l1d_assoc,
                             start_index_bit = block_size_bits,
-                            is_icache = False)
+                            is_icache = False,
+                            has_traces = True)
 
         prefetcher = RubyPrefetcher()
 
