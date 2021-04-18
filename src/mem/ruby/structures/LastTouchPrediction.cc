@@ -20,9 +20,9 @@ void LoggerLT::setup(const char * prefix, int id)
     sprintf(fileName, "LogLTP_%d.log", id);
     logFile.open(fileName, std::ofstream::out);
     if (logFile.is_open())
-        std::cout << "trace: logFile - Open Succesful \n";
+        std::cout << "trace: logFile " << id << " - Open Succesful \n";
     else
-        std::cout << "trace: logFile - Open failed \n";
+        std::cout << "trace: logFile " << id << " - Open Failed \n";
 }
 
 LTP::LTP(int num_sets, int assoc, int cache_id)
@@ -42,9 +42,11 @@ LTP::init (int num_sets, int assoc, int cache_id)
     logPrefix = "";
     logPrefix = "trace " + std::to_string(m_cache_id) + " : ";
     logLT.setup(logPrefix.c_str(), m_cache_id);
+    traceLog(logLT, "log setup done \n");
 
-    m_signature_table.resize(num_sets);
-    m_history_table.resize(assoc);
+    m_signature_table.resize(m_cache_num_sets);
+    m_history_table.resize(m_cache_num_sets);
+    traceLog(logLT, "resized to %d \n", m_cache_num_sets);
 
 }
 
