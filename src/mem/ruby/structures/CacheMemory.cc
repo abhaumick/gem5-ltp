@@ -62,7 +62,6 @@ operator<<(std::ostream& out, const CacheMemory& obj)
 
 CacheMemory::CacheMemory(const Params &p)
     : SimObject(p),
-    logLT("trace: "),
     dataArray(p.dataArrayBanks, p.dataAccessLatency,
               p.start_index_bit, p.ruby_system),
     tagArray(p.tagArrayBanks, p.tagAccessLatency,
@@ -76,8 +75,9 @@ CacheMemory::CacheMemory(const Params &p)
     m_is_instruction_only_cache = p.is_icache;
     m_has_traces = p.has_traces;
     m_cache_id = p.cache_id;
-    if (m_has_traces)
-        logLT.setup(m_cache_id);
+    // if (m_has_traces)
+    //     logLT.setup(m_cache_id);
+
     m_resource_stalls = p.resourceStalls;
     m_block_size = p.block_size;  // may be 0 at this point. Updated in init()
     m_use_occupancy = dynamic_cast<ReplacementPolicy::WeightedLRU*>(
@@ -107,12 +107,13 @@ CacheMemory::init()
         }
     }
 
-    traceLog(logLT, "Cache Memory Init\n");
+    // traceLog(logLT, "Cache Memory Init\n");
+    // m_ltp(m_cache_num_sets, m_cache_assoc, m_cache_id);
 }
 
 CacheMemory::~CacheMemory()
 {
-    traceLog(logLT, "Cache Memory Destroyed\n");
+    // traceLog(logLT, "Cache Memory Destroyed\n");
 
     if (m_replacementPolicy_ptr)
         delete m_replacementPolicy_ptr;
@@ -745,18 +746,47 @@ CacheMemory::htmCommitTransaction()
         htmReadSetSize, htmWriteSetSize);
 }
 
-void
-CacheMemory::startTrace(Addr addr, int64_t pc)
-{
-    assert(address == makeLineAddress(address));
+// void
+// CacheMemory::startTrace(Addr address, int64_t pc)
+// {
+//     assert(address == makeLineAddress(address));
+//     int64_t cacheSet = addressToCacheSet(address);
+//     int loc = findTagInSet(cacheSet, address);
+//     m_ltp.allocateSignature(cacheSet, loc, pc);
+// }
 
-    int64_t cacheSet = addressToCacheSet(address);
+// void
+// CacheMemory::addToTrace(Addr address, int64_t pc)
+// {
+//     assert(address == makeLineAddress(address));
+//     int64_t cacheSet = addressToCacheSet(address);
+//     int loc = findTagInSet(cacheSet, address);
+//     m_ltp.appendSignature(cacheSet, loc, pc);
+// }
 
+// void
+// CacheMemory::endTrace(Addr address, int64_t pc)
+// {
+//     assert(address == makeLineAddress(address));
+//     int64_t cacheSet = addressToCacheSet(address);
+//     int loc = findTagInSet(cacheSet, address);
+//     m_ltp.endTrace(cacheSet, loc);
+//     // reset signature for <cacheSet, loc>
+//     //add this signature to the history table set for <cacheSet, loc>
+// }
 
+// bool
+// CacheMemory::checkLastTouch(Addr address, int64_t pc)
+// {
+//     assert(address == makeLineAddress(address));
+//     int64_t cacheSet = addressToCacheSet(address);
+//     int loc = findTagInSet(cacheSet, address);
+//     //do an associative search on the history table set for <cacheSet, loc>
+//     //if found in the set then
+//     return false;
 
+// }
 
-
-}
 
 void
 CacheMemory::profileDemandHit()

@@ -150,10 +150,13 @@ class CacheMemory : public SimObject
     void htmCommitTransaction();
 
     //  Last Touch Prediction (LTP)
-    LoggerLT logLT;
-    void startTrace(Addr addr, int64_t pc);
-    void addToTrace(Addr addr, int64_t pc);  //  Determine Args
-    void endTrace(Addr addr, int64_t pc);
+    // LoggerLT logLT;
+    void startTrace(Addr address, int64_t pc);
+    void addToTrace(Addr address, int64_t pc);  //  Determine Args
+    void endTrace(Addr address, int64_t pc);
+    bool checkLastTouch(Addr address, int64_t pc);
+
+    LTP m_ltp;
 
   public:
     int getCacheSize() const { return m_cache_size; }
