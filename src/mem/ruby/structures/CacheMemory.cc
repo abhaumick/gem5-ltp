@@ -109,6 +109,8 @@ CacheMemory::init()
 
     // traceLog(logLT, "Cache Memory Init\n");
     // m_ltp(m_cache_num_sets, m_cache_assoc, m_cache_id);
+    m_ltp.init(m_cache_num_sets, m_cache_assoc, m_cache_id);
+
 }
 
 CacheMemory::~CacheMemory()
@@ -746,46 +748,41 @@ CacheMemory::htmCommitTransaction()
         htmReadSetSize, htmWriteSetSize);
 }
 
-// void
-// CacheMemory::startTrace(Addr address, int64_t pc)
-// {
-//     assert(address == makeLineAddress(address));
-//     int64_t cacheSet = addressToCacheSet(address);
-//     int loc = findTagInSet(cacheSet, address);
-//     m_ltp.allocateSignature(cacheSet, loc, pc);
-// }
+void
+CacheMemory::startTrace(Addr address, int64_t pc)
+{
+    assert(address == makeLineAddress(address));
+    int64_t cacheSet = addressToCacheSet(address);
+    int loc = findTagInSet(cacheSet, address);
+    m_ltp.allocateSignature(cacheSet, loc, pc);
+}
 
-// void
-// CacheMemory::addToTrace(Addr address, int64_t pc)
-// {
-//     assert(address == makeLineAddress(address));
-//     int64_t cacheSet = addressToCacheSet(address);
-//     int loc = findTagInSet(cacheSet, address);
-//     m_ltp.appendSignature(cacheSet, loc, pc);
-// }
+void
+CacheMemory::addToTrace(Addr address, int64_t pc)
+{
+    assert(address == makeLineAddress(address));
+    int64_t cacheSet = addressToCacheSet(address);
+    int loc = findTagInSet(cacheSet, address);
+    m_ltp.appendSignature(cacheSet, loc, pc);
+}
 
-// void
-// CacheMemory::endTrace(Addr address, int64_t pc)
-// {
-//     assert(address == makeLineAddress(address));
-//     int64_t cacheSet = addressToCacheSet(address);
-//     int loc = findTagInSet(cacheSet, address);
-//     m_ltp.endTrace(cacheSet, loc);
-//     // reset signature for <cacheSet, loc>
-//     //add this signature to the history table set for <cacheSet, loc>
-// }
+void
+CacheMemory::endTrace(Addr address, int64_t pc)
+{
+    assert(address == makeLineAddress(address));
+    int64_t cacheSet = addressToCacheSet(address);
+    int loc = findTagInSet(cacheSet, address);
+    m_ltp.endTrace(cacheSet, loc);
+    // reset signature for <cacheSet, loc>
+    //add this signature to the history table set for <cacheSet, loc>
+}
 
-// bool
-// CacheMemory::checkLastTouch(Addr address, int64_t pc)
-// {
-//     assert(address == makeLineAddress(address));
-//     int64_t cacheSet = addressToCacheSet(address);
-//     int loc = findTagInSet(cacheSet, address);
-//     //do an associative search on the history table set for <cacheSet, loc>
-//     //if found in the set then
-//     return false;
+bool
+CacheMemory::checkLastTouch(int cacheSet, int loc)
+{
+    return m_ltp.checkLastTouch(cacheSet, loc);
 
-// }
+}
 
 
 void

@@ -76,7 +76,7 @@ protected:
 #define traceLog(logger, ...) \
   logger.print(::LoggerLT::Loc(__FILE__, __LINE__), __VA_ARGS__)
 
-struct LtpTrace
+struct ltpTrace
 {
   std::vector<Addr> PCVector;
   bool valid;
@@ -90,15 +90,15 @@ public:
   LTP(int numberOfSets, int associativity, int cache_id);
   ~LTP() {};
 
-  void init();
+  void init(int num_sets, int assoc, int cache_id);
 
   LoggerLT logLT;
 
   void allocateSignature(int cacheSet, int loc, Addr PC);
   void appendSignature(int cacheSet, int loc, Addr PC);
   void deallocateSignature(int cacheSet, int loc);
-
   void endTrace(int cacheSet, int loc);
+  bool checkLastTouch(int cacheSet, int loc);
 
 private:
   int m_cache_num_sets;
@@ -109,10 +109,10 @@ private:
 
   //2-d vector of LTP Entries for signature table.
   //First index is number of sets. Second is associativity.
-  std::vector<std::vector<LtpTrace *>> m_signature_table;
+  std::vector<std::vector<ltpTrace *>> m_signature_table;
 
   //2-d vector of a set of LTP Entries for history table.
-  std::vector<std::vector<std::set<LtpTrace *>>> m_history_table;
+  std::vector<std::vector<std::set<ltpTrace *>>> m_history_table;
 };
 
 #endif // __MEM_RUBY_STRUCTURES_LASTTOUCHPREDICTION_HH__
