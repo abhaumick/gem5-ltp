@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gem5_nCores="1"
+gem5_nCores="4"
 
 # gem5 Settings
 gem5_dir="${PWD}"

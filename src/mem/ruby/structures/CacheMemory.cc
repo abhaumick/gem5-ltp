@@ -107,9 +107,9 @@ CacheMemory::init()
         }
     }
 
-    // traceLog(logLT, "Cache Memory Init\n");
-    // m_ltp(m_cache_num_sets, m_cache_assoc, m_cache_id);
-    m_ltp.init(m_cache_num_sets, m_cache_assoc, m_cache_id);
+    if (m_has_traces) {
+        m_ltp.init(m_cache_num_sets, m_cache_assoc, m_cache_id);
+    }
 
 }
 
