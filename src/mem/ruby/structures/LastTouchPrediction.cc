@@ -44,8 +44,11 @@ LTP::init (int num_sets, int assoc, int cache_id)
     logLT.setup(logPrefix.c_str(), m_cache_id);
     traceLog(logLT, "log setup done \n");
 
-    m_signature_table.resize(m_cache_num_sets);
-    m_history_table.resize(m_cache_num_sets);
+    m_signature_table.resize(m_cache_num_sets,
+                    std::vector<ltpTrace*>(m_cache_assoc, nullptr));
+    m_history_table.resize(m_cache_num_sets,
+                    std::vector<std::set<ltpTrace*>>(m_cache_assoc)); //verify
+
     traceLog(logLT, "resized to %d \n", m_cache_num_sets);
 
 }
