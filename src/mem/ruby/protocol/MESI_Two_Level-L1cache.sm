@@ -107,6 +107,10 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
 
   // EVENTS
   enumeration(Event, desc="Cache events") {
+
+    //LTP events
+    Load_Evict,     desc="Load which is also a last touch";
+    Store_Evict,    desc="Store which is also a last touch";
     // L1 events
     Load,            desc="Load request from the home processor";
     Ifetch,          desc="I-fetch request from the home processor";
@@ -279,6 +283,17 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
       return Event:Store;
     } else {
       error("Invalid RubyRequestType");
+    }
+  }
+
+  Event event_to_evict_event(Event request) {
+    if(request == Event::Load){
+      return Event::Load_Evict;
+    } else if(request == Event::Store) {
+      return Event::Store_Evict;
+    }
+    else {
+      error("Invalid event for Last Touch");
     }
   }
 
@@ -498,7 +513,14 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
           Entry L1Dcache_entry := getL1DCacheEntry(in_msg.LineAddress);
           if (is_valid(L1Dcache_entry)) {
             // The tag matches for the L1, so the L1 ask the L2 for it
-            trigger(mandatory_request_type_to_event(in_msg.Type), in_msg.LineAddress,
+            Event evt = mandatory_request_type_to_event(in_msg.Type);
+            if(evt == Event::Load || evt == Event::Store) {
+              if(L1Dcache.checkLastTouch(in_msg.LineAddress,
+                    in_msg.ProgramCounter) {
+                evt = event_to_evict_event(evt);
+              }
+            }
+            trigger(evt, in_msg.LineAddress,
                     L1Dcache_entry, TBEs[in_msg.LineAddress]);
           } else {
 
@@ -539,6 +561,26 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
           out_msg.AccessMode := RubyAccessMode:Supervisor;
       }
   }
+  
+  //LTP Actions
+  action(ltp_addToTrace, "l_add", desc="Add current PC to trace") {
+    peek(mandatoryQueue_in, RubyRequest) {
+      L1Dcache.addToTrace(in_msg.LineAddress, in_msg.ProgramCounter);
+    }
+  }
+
+  action(ltp_startTrace, "l_start", desc="Start a new trace") {
+  peek(mandatoryQueue_in, RubyRequest) {
+      L1Dcache.startTrace(in_msg.LineAddress, in_msg.ProgramCounter);
+    }
+  }
+
+  action(ltp_endTrace, "l_end", desc="End the current trace") {
+  peek(mandatoryQueue_in, RubyRequest) {
+      L1Dcache.endTrace(in_msg.LineAddress, in_msg.ProgramCounter);
+    }
+  }
+
 
   // ACTIONS
   action(a_issueGETS, "a", desc="Issue GETS") {
@@ -1259,6 +1301,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition(IS, Data_all_Acks, S) {
     u_writeDataToL1Cache;
     hx_load_hit;
+    ltp_startTrace;
     s_deallocateTBE;
     o_popIncomingResponseQueue;
     kd_wakeUpDependents;

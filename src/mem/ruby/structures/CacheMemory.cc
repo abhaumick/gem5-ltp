@@ -778,7 +778,7 @@ CacheMemory::endTrace(Addr address, int64_t pc)
 }
 
 bool
-CacheMemory::checkLastTouch(int cacheSet, int loc)
+CacheMemory::checkLastTouch_unused(int cacheSet, int loc)
 {
     return m_ltp.checkLastTouch(cacheSet, loc);
 

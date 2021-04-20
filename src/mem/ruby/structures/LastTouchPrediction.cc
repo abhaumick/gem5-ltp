@@ -70,6 +70,7 @@ void LTP::appendSignature(int cacheSet, int loc, Addr PC)
     assert(signature != NULL);
 
     signature->PCVector.push_back(PC);
+    traceLog(logLT, "Added PC to current Trace");
 }
 void LTP::deallocateSignature(int cacheSet, int loc)
 {

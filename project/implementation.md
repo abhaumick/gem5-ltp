@@ -14,7 +14,8 @@ https://www.gem5.org/documentation/general_docs/ruby/MESI_Two_Level/
 
 ### Events
 - Add internal events
-  - LTP_Evict
+  - Load_Evict
+  - Store_Evict
 
 #### LTP can happen @
 
