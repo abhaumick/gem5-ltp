@@ -287,14 +287,15 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   }
 
   Event event_to_evict_event(Event request) {
-    if(request == Event::Load){
-      return Event::Load_Evict;
-    } else if(request == Event::Store) {
-      return Event::Store_Evict;
+    if (request == Event:Load) {
+      return Event:Load_Evict;
+    } else if (request == Event:Store) {
+      return Event:Store_Evict;
     }
     else {
       error("Invalid event for Last Touch");
     }
+    return request;
   }
 
   Event prefetch_request_type_to_event(RubyRequestType type) {
@@ -513,11 +514,10 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
           Entry L1Dcache_entry := getL1DCacheEntry(in_msg.LineAddress);
           if (is_valid(L1Dcache_entry)) {
             // The tag matches for the L1, so the L1 ask the L2 for it
-            Event evt = mandatory_request_type_to_event(in_msg.Type);
-            if(evt == Event::Load || evt == Event::Store) {
-              if(L1Dcache.checkLastTouch(in_msg.LineAddress,
-                    in_msg.ProgramCounter) {
-                evt = event_to_evict_event(evt);
+            Event evt := mandatory_request_type_to_event(in_msg.Type);
+            if (evt == Event:Load || evt == Event:Store) {
+              if (L1Dcache.checkLastTouch(in_msg.LineAddress, in_msg.ProgramCounter)) {
+                evt := event_to_evict_event(evt);
               }
             }
             trigger(evt, in_msg.LineAddress,

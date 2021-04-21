@@ -80,7 +80,11 @@ struct ltpTrace
 {
   std::vector<Addr> PCVector;
   bool valid;
+
+  // friend std::ostream& operator<<(std::ostream & out, const ltpTrace & t);
 };
+
+std::ostream& operator<<(std::ostream & out, const ltpTrace & t);
 
 class LTP
 {
@@ -98,7 +102,11 @@ public:
   void appendSignature(int cacheSet, int loc, Addr PC);
   void deallocateSignature(int cacheSet, int loc);
   void endTrace(int cacheSet, int loc);
-  bool checkLastTouch(int cacheSet, int loc);
+  bool checkLastTouch(int cacheSet, int loc, Addr PC);
+  void ltpTester();
+  std::string print() const;
+  std::string printHistoryTable() const;
+  std::string printSignatureTable() const;
 
 private:
   int m_cache_num_sets;
@@ -114,5 +122,7 @@ private:
   //2-d vector of a set of LTP Entries for history table.
   std::vector<std::vector<std::set<ltpTrace *>>> m_history_table;
 };
+
+std::ostream& operator<<(std::ostream & out, const LTP& ltp);
 
 #endif // __MEM_RUBY_STRUCTURES_LASTTOUCHPREDICTION_HH__

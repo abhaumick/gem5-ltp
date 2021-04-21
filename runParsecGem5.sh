@@ -46,6 +46,7 @@ echo "Copying results to m5out"
 rm -rf  ${gem5_dir}/m5out/${bm_name} -v
 mkdir  ${gem5_dir}/m5out -v
 mkdir  ${gem5_dir}/m5out/${bm_name} -v
-mv ${run_path}/m5out/* ${gem5_dir}/m5out/${bm_name}/ -f -v
+mv ${run_path}/m5out ${gem5_dir}/m5out/${bm_name}/ -f -v
+mv ${run_path}/*.log ${gem5_dir}/m5out/${bm_name}/ -f -v
 echo " .. Done"
 echo ""

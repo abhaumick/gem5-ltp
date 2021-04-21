@@ -749,7 +749,7 @@ CacheMemory::htmCommitTransaction()
 }
 
 void
-CacheMemory::startTrace(Addr address, int64_t pc)
+CacheMemory::startTrace(Addr address, Addr pc)
 {
     assert(address == makeLineAddress(address));
     int64_t cacheSet = addressToCacheSet(address);
@@ -758,7 +758,7 @@ CacheMemory::startTrace(Addr address, int64_t pc)
 }
 
 void
-CacheMemory::addToTrace(Addr address, int64_t pc)
+CacheMemory::addToTrace(Addr address, Addr pc)
 {
     assert(address == makeLineAddress(address));
     int64_t cacheSet = addressToCacheSet(address);
@@ -767,7 +767,7 @@ CacheMemory::addToTrace(Addr address, int64_t pc)
 }
 
 void
-CacheMemory::endTrace(Addr address, int64_t pc)
+CacheMemory::endTrace(Addr address, Addr pc)
 {
     assert(address == makeLineAddress(address));
     int64_t cacheSet = addressToCacheSet(address);
@@ -777,11 +777,14 @@ CacheMemory::endTrace(Addr address, int64_t pc)
     //add this signature to the history table set for <cacheSet, loc>
 }
 
-bool
-CacheMemory::checkLastTouch_unused(int cacheSet, int loc)
-{
-    return m_ltp.checkLastTouch(cacheSet, loc);
 
+bool
+CacheMemory::checkLastTouch(Addr address, Addr pc)
+{
+    assert(address == makeLineAddress(address));
+    int64_t cacheSet = addressToCacheSet(address);
+    int loc = findTagInSet(cacheSet, address);
+    return m_ltp.checkLastTouch(cacheSet, loc, pc);
 }
 
 

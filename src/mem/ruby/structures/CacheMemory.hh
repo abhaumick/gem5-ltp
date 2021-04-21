@@ -151,11 +151,11 @@ class CacheMemory : public SimObject
 
     //  Last Touch Prediction (LTP)
     // LoggerLT logLT;
-    void startTrace(Addr address, int64_t pc);
-    void addToTrace(Addr address, int64_t pc);  //  Determine Args
-    void endTrace(Addr address, int64_t pc);
-    bool checkLastTouch_unused(int cacheSet, int loc);
-    bool checkLastTouch(Addr address, int64_t pc); // TODO
+    void startTrace(Addr address, Addr pc);
+    void addToTrace(Addr address, Addr pc);  //  Determine Args
+    void endTrace(Addr address, Addr pc);
+    // bool checkLastTouch_unused(int cacheSet, int loc);
+    bool checkLastTouch(Addr address, Addr pc); // TODO
 
     LTP m_ltp;
 

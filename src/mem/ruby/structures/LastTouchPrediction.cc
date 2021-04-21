@@ -25,6 +25,17 @@ void LoggerLT::setup(const char * prefix, int id)
         std::cout << "trace: logFile " << id << " - Open Failed \n";
 }
 
+std::ostream& operator<<(std::ostream & out, const ltpTrace & t)
+{
+    out << t.valid << " ";
+    if (t.valid) {
+        for (auto pc : t.PCVector)
+            out << std::hex << pc << " -> ";
+    }
+    out << " ";
+    return out;
+}
+
 LTP::LTP(int num_sets, int assoc, int cache_id)
     :   logLT("trace : "),
     m_cache_num_sets(num_sets),
@@ -50,7 +61,7 @@ LTP::init (int num_sets, int assoc, int cache_id)
                     std::vector<std::set<ltpTrace*>>(m_cache_assoc)); //verify
 
     traceLog(logLT, "resized to %d \n", m_cache_num_sets);
-
+    ltpTester();
 }
 
 void LTP::allocateSignature(int cacheSet, int loc, Addr PC)
@@ -67,16 +78,18 @@ void LTP::allocateSignature(int cacheSet, int loc, Addr PC)
 void LTP::appendSignature(int cacheSet, int loc, Addr PC)
 {
     ltpTrace *signature = m_signature_table[cacheSet][loc];
-    assert(signature != NULL);
+    assert(signature->valid = true);
 
     signature->PCVector.push_back(PC);
-    traceLog(logLT, "Added PC to current Trace");
+    traceLog(logLT, "Added PC '%16x' to [set,idx] = [%010d,%04d] Trace \n",
+        PC, cacheSet, loc);
 }
 void LTP::deallocateSignature(int cacheSet, int loc)
 {
     ltpTrace *signature = m_signature_table[cacheSet][loc];
     assert(signature != NULL);
     delete (signature);
+    m_signature_table[cacheSet][loc] = nullptr;
 }
 
 void LTP::endTrace(int cacheSet, int loc)
@@ -90,12 +103,130 @@ void LTP::endTrace(int cacheSet, int loc)
 
     //deallocate completed signature
     deallocateSignature(cacheSet, loc);
+    traceLog(logLT, "ending trace for [set,idx] = [%010d,%04d]\n",
+        cacheSet, loc);
 }
 
-bool LTP::checkLastTouch(int cacheSet, int loc)
+//  TODO: modify to accept the request PC
+//          check if match AFTER appending incoming PC
+// bool LTP::checkLastTouch_unused(int cacheSet, int loc)
+// {
+//     std::set<ltpTrace*> traceHistory = m_history_table[cacheSet][loc];
+//     //check if current signature is in history.
+//     return (traceHistory.find(m_signature_table[cacheSet][loc])
+//             != traceHistory.end());
+// }
+
+bool
+LTP::checkLastTouch(int cacheSet, int loc, Addr PC) //TODO
 {
-    std::set<ltpTrace*> traceHistory = m_history_table[cacheSet][loc];
-    //check if current signature is in history.
-    return (traceHistory.find(m_signature_table[cacheSet][loc])
-            != traceHistory.end());
+    //  std::set<ltpTrace*> traceHistory = m_history_table[cacheSet][loc];
+    // //check if current signature is in history.
+
+    // ltpTrace tempSignature= *m_signature_table[cacheSet][loc];
+    // assert(tempSignature.valid);
+
+    // tempSignature.PCVector.push_back(PC);
+
+
+    // return (traceHistory.find(tempSignature)
+    //         != traceHistory.end());
+
+    return false;
 }
+
+
+
+void LTP::ltpTester()
+{
+    traceLog(logLT, "\n -- LTP Self Test -- \n");
+    //verify the sizes of both data structures
+    char buffer[50];
+    sprintf(buffer, "Size of history table is %lu x %lu\n",
+        m_history_table.size(), m_history_table[0].size());
+    traceLog(logLT, buffer);
+
+    sprintf(buffer, "Size of signature table is %lu x %lu\n",
+        m_signature_table.size(), m_signature_table[0].size());
+    traceLog(logLT, buffer);
+
+    int cacheSet, loc;
+    Addr PC;
+
+    //allocate a signature
+    cacheSet = 0;
+    loc = 1;
+    PC = 0x0A;
+    allocateSignature(cacheSet, loc, PC);
+
+    //append a signature
+    PC = 0xBD;
+    appendSignature(cacheSet, loc, PC);
+
+    //end the current trace
+    endTrace(cacheSet, loc);
+
+    //check the last touch
+    checkLastTouch(cacheSet, loc, PC);
+
+
+    traceLog(logLT, "\n -- End of LTP Self Test -- \n");
+    traceLog(logLT, this->print());
+    traceLog(logLT, "\n -- End of LTP Self Test -- \n");
+
+
+}
+
+std::string LTP::print() const
+{
+    std::stringstream ss;
+    ss << "\n";
+    ss << "Last-Touch Predictor \n";
+    // std::cerr << this->printHistoryTable();
+    ss << this->printHistoryTable();
+    // std::cerr << this->printSignatureTable();
+    ss << this->printSignatureTable();
+    ss << "\n\n";
+
+    return ss.str();
+}
+
+std::string LTP::printHistoryTable() const
+{
+    std::stringstream ss;
+    ss << "History Table \n";
+    ss << "------------- \n";
+    ss << "------------- \n";
+    return ss.str();
+}
+
+std::string LTP::printSignatureTable() const
+{
+    std::stringstream ss;
+    ss << "Signature Table \n";
+    ss << "------------- \n";
+
+    for (auto set = 0; set < m_cache_num_sets; ++ set) {
+        for (auto idx = 0; idx < m_cache_assoc; ++ idx) {
+            ltpTrace * trace = m_signature_table[set][idx];
+            // std::cerr << "[" << set << ", " << idx << "] --> "
+            //     << trace << (trace == nullptr) << " \n";
+            if (trace == nullptr || trace == NULL) {
+                // ss << " * undef * " << " \n";
+            }
+            else {
+                ss << "[" << set << ", " << idx << "] --> ";
+                ss << * trace << " \n";
+            }
+        }
+    }
+
+    ss << "------------- \n";
+    return ss.str();
+}
+
+std::ostream& operator<<(std::ostream & out, const LTP & ltp)
+{
+  return (out << ltp.print());
+}
+

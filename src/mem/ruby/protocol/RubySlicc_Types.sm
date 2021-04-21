@@ -197,6 +197,10 @@ structure (CacheMemory, external = "yes") {
   void deallocate(Addr);
   AbstractCacheEntry lookup(Addr);
   bool isTagPresent(Addr);
+  void startTrace(Addr address, Addr pc);
+  void addToTrace(Addr address, Addr pc);  
+  void endTrace(Addr address, Addr pc);
+  bool checkLastTouch(Addr address, Addr pc);
   Cycles getTagLatency();
   Cycles getDataLatency();
   void setMRU(Addr);
