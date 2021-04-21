@@ -562,10 +562,10 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
       }
   }
   
-  //LTP Actions
+  //LTP Actions 
   action(ltp_addToTrace, "l_add", desc="Add current PC to trace") {
     peek(mandatoryQueue_in, RubyRequest) {
-      L1Dcache.addToTrace(in_msg.LineAddress, in_msg.ProgramCounter);
+     L1Dcache.addToTrace(in_msg.LineAddress, in_msg.ProgramCounter);
     }
   }
 
@@ -580,6 +580,12 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
       L1Dcache.endTrace(in_msg.LineAddress, in_msg.ProgramCounter);
     }
   }
+
+  action(ltp_deleteTrace, "l_delete", desc="Delete the current trace") {
+    L1Dcache.deleteTrace(address);
+  }
+
+
 
 
   // ACTIONS
@@ -1084,6 +1090,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     a_issueGETS;
     uu_profileDataMiss;
     po_observeMiss;
+    ltp_startTrace; //ltp_action
     k_popMandatoryQueue;
   }
 
@@ -1290,6 +1297,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   // Transitions from IS
   transition({IS, IS_I}, Inv, IS_I) {
     fi_sendInvAck;
+    ltp_deleteTrace; //ltp_action
     l_popRequestQueue;
   }
 
@@ -1301,7 +1309,6 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition(IS, Data_all_Acks, S) {
     u_writeDataToL1Cache;
     hx_load_hit;
-    ltp_startTrace;
     s_deallocateTBE;
     o_popIncomingResponseQueue;
     kd_wakeUpDependents;

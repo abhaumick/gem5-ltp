@@ -98,11 +98,11 @@ public:
 
   LoggerLT logLT;
 
-  void allocateSignature(int cacheSet, int loc, Addr PC);
-  void appendSignature(int cacheSet, int loc, Addr PC);
-  void deallocateSignature(int cacheSet, int loc);
-  void endTrace(int cacheSet, int loc);
-  bool checkLastTouch(int cacheSet, int loc, Addr PC);
+  void allocateSignature(int64_t cacheSet, int loc, Addr PC);
+  void appendSignature(int64_t cacheSet, int loc, Addr PC);
+  void deallocateSignature(int64_t cacheSet, int loc);
+  void endTrace(int64_t cacheSet, int loc);
+  bool checkLastTouch(int64_t cacheSet, int loc, Addr PC);
   void ltpTester();
   std::string print() const;
   std::string printHistoryTable() const;

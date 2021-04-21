@@ -200,6 +200,7 @@ structure (CacheMemory, external = "yes") {
   void startTrace(Addr address, Addr pc);
   void addToTrace(Addr address, Addr pc);  
   void endTrace(Addr address, Addr pc);
+  void deleteTrace(Addr address);
   bool checkLastTouch(Addr address, Addr pc);
   Cycles getTagLatency();
   Cycles getDataLatency();

@@ -64,18 +64,20 @@ LTP::init (int num_sets, int assoc, int cache_id)
     ltpTester();
 }
 
-void LTP::allocateSignature(int cacheSet, int loc, Addr PC)
+void LTP::allocateSignature(int64_t cacheSet, int loc, Addr PC)
 {
     ltpTrace *signature = m_signature_table[cacheSet][loc];
-    assert(signature == NULL);
+    assert(signature == NULL || signature == nullptr);
 
     signature = new ltpTrace;
     signature->PCVector.push_back(PC);
     signature->valid = true;
 
     m_signature_table[cacheSet][loc] = signature;
+    traceLog(logLT, "alloc sig %x with PC '%016x' to [%010d,%04d] \n",
+        signature, PC, cacheSet, loc);
 }
-void LTP::appendSignature(int cacheSet, int loc, Addr PC)
+void LTP::appendSignature(int64_t cacheSet, int loc, Addr PC)
 {
     ltpTrace *signature = m_signature_table[cacheSet][loc];
     assert(signature->valid = true);
@@ -84,15 +86,16 @@ void LTP::appendSignature(int cacheSet, int loc, Addr PC)
     traceLog(logLT, "Added PC '%16x' to [set,idx] = [%010d,%04d] Trace \n",
         PC, cacheSet, loc);
 }
-void LTP::deallocateSignature(int cacheSet, int loc)
+void LTP::deallocateSignature(int64_t cacheSet, int loc)
 {
     ltpTrace *signature = m_signature_table[cacheSet][loc];
-    assert(signature != NULL);
-    delete (signature);
-    m_signature_table[cacheSet][loc] = nullptr;
+    if (signature != NULL) {
+        delete (signature);
+        m_signature_table[cacheSet][loc] = nullptr;
+    }
 }
 
-void LTP::endTrace(int cacheSet, int loc)
+void LTP::endTrace(int64_t cacheSet, int loc)
 {
     ltpTrace *completedSignature = m_signature_table[cacheSet][loc];
 
@@ -118,7 +121,7 @@ void LTP::endTrace(int cacheSet, int loc)
 // }
 
 bool
-LTP::checkLastTouch(int cacheSet, int loc, Addr PC) //TODO
+LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC) //TODO
 {
     //  std::set<ltpTrace*> traceHistory = m_history_table[cacheSet][loc];
     // //check if current signature is in history.

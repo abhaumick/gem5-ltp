@@ -754,6 +754,9 @@ CacheMemory::startTrace(Addr address, Addr pc)
     assert(address == makeLineAddress(address));
     int64_t cacheSet = addressToCacheSet(address);
     int loc = findTagInSet(cacheSet, address);
+    // std::cerr<< "start Trace called with"<<address<< "  ," <<pc;
+    m_ltp.logLT.print(::LoggerLT::Loc(__FILE__, __LINE__),
+        "$ startTrace: %016x, pc = %016x", address, pc);
     m_ltp.allocateSignature(cacheSet, loc, pc);
 }
 
@@ -769,14 +772,26 @@ CacheMemory::addToTrace(Addr address, Addr pc)
 void
 CacheMemory::endTrace(Addr address, Addr pc)
 {
+    // reset signature for <cacheSet, loc>
+    //add this signature to the history table set for <cacheSet, loc>
     assert(address == makeLineAddress(address));
     int64_t cacheSet = addressToCacheSet(address);
     int loc = findTagInSet(cacheSet, address);
+    m_ltp.logLT.print(::LoggerLT::Loc(__FILE__, __LINE__),
+        "$ endTrace: %016x, pc = %016x", address, pc);
     m_ltp.endTrace(cacheSet, loc);
-    // reset signature for <cacheSet, loc>
-    //add this signature to the history table set for <cacheSet, loc>
+
 }
 
+void
+CacheMemory::deleteTrace(Addr address)
+{
+    assert(address == makeLineAddress(address));
+    int64_t cacheSet = addressToCacheSet(address);
+    int loc = findTagInSet(cacheSet, address);
+    m_ltp.deallocateSignature(cacheSet, loc);
+
+}
 
 bool
 CacheMemory::checkLastTouch(Addr address, Addr pc)
