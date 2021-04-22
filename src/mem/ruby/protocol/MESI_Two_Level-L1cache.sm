@@ -155,6 +155,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   // TBE fields
   structure(TBE, desc="...") {
     Addr addr,              desc="Physical address for this TBE";
+    Addr pc, default="0",  desc="Program Counter from the request";
     State TBEState,        desc="Transient state";
     DataBlock DataBlk,                desc="Buffer for the data block";
     bool Dirty, default="false",   desc="data is dirty";
@@ -931,6 +932,19 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     tbe.DataBlk := cache_entry.DataBlk;
   }
 
+  action(l_allocateTBE_withPC, "lp", desc="Allocate TBE (pop PC from mandatory queue)") {
+    check_allocate(TBEs);
+    assert(is_valid(cache_entry));
+    TBEs.allocate(address);
+    set_tbe(TBEs[address]);
+    tbe.isPrefetch := false;
+    tbe.Dirty := cache_entry.Dirty;
+    tbe.DataBlk := cache_entry.DataBlk;
+    peek(mandatoryQueue_in, RubyRequest) {
+      tbe.pc := in_msg.ProgramCounter;
+    }
+  }
+
   action(k_popMandatoryQueue, "k", desc="Pop mandatory queue.") {
     mandatoryQueue_in.dequeue(clockEdge());
   }
@@ -1086,7 +1100,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
 
   transition({NP,I}, Load, IS) {
     oo_allocateL1DCacheBlock;
-    i_allocateTBE;
+    l_allocateTBE_withPC;  //  ltp_action
     a_issueGETS;
     uu_profileDataMiss;
     po_observeMiss;
@@ -1121,7 +1135,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
 
   transition({NP,I}, Ifetch, IS) {
     pp_allocateL1ICacheBlock;
-    i_allocateTBE;
+    l_allocateTBE_withPC; //  ltp_action
     ai_issueGETINSTR;
     uu_profileInstMiss;
     po_observeMiss;
@@ -1145,7 +1159,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
 
   transition({NP,I}, Store, IM) {
     oo_allocateL1DCacheBlock;
-    i_allocateTBE;
+    l_allocateTBE_withPC;  //  ltp_action
     b_issueGETX;
     uu_profileDataMiss;
     po_observeMiss;
@@ -1192,7 +1206,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   }
 
   transition(S, Store, SM) {
-    i_allocateTBE;
+    l_allocateTBE_withPC;   //  ltp_action
     c_issueUPGRADE;
     uu_profileDataMiss;
     k_popMandatoryQueue;
@@ -1251,6 +1265,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     forward_eviction_to_cpu;
     i_allocateTBE;
     g_issuePUTX;   // send data, but hold in case forwarded request
+    ltp_endTrace;  // ltp_action
     ff_deallocateL1CacheBlock;
   }
 
@@ -1263,6 +1278,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition(M, Inv, I) {
     forward_eviction_to_cpu;
     f_sendDataToL2;
+    ltp_endTrace; // ltp_action
     l_popRequestQueue;
   }
 
