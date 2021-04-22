@@ -64,18 +64,25 @@ LTP::init (int num_sets, int assoc, int cache_id)
     ltpTester();
 }
 
-void LTP::allocateSignature(int64_t cacheSet, int loc, Addr PC)
+/**
+ * @brief allocates a new ltp trace with empty trace
+ *
+ * @param cacheSet
+ * @param loc
+ */
+void LTP::startTrace(int64_t cacheSet, int loc)
 {
     ltpTrace *signature = m_signature_table[cacheSet][loc];
     assert(signature == NULL || signature == nullptr);
 
     signature = new ltpTrace;
-    signature->PCVector.push_back(PC);
+    //
+    // signature->PCVector.push_back(PC);
     signature->valid = true;
 
     m_signature_table[cacheSet][loc] = signature;
     traceLog(logLT, "alloc sig %x with PC '%016x' to [%010d,%04d] \n",
-        signature, PC, cacheSet, loc);
+        signature, cacheSet, loc);
 }
 void LTP::appendSignature(int64_t cacheSet, int loc, Addr PC)
 {
@@ -99,15 +106,23 @@ void LTP::endTrace(int64_t cacheSet, int loc)
 {
     ltpTrace *completedSignature = m_signature_table[cacheSet][loc];
 
-    //Allocate a signature in history table and copy the ltpTrace
-    ltpTrace *signature = new ltpTrace;
-    signature->PCVector = completedSignature->PCVector;
-    m_history_table[cacheSet][loc].insert(signature);
-
-    //deallocate completed signature
-    deallocateSignature(cacheSet, loc);
-    traceLog(logLT, "ending trace for [set,idx] = [%010d,%04d]\n",
+    traceLog(logLT, "endTrace [%010d,%04d]\n",
         cacheSet, loc);
+    //Allocate a signature in history table and copy the ltpTrace
+    if (completedSignature == NULL || completedSignature == nullptr) {
+        traceLog(logLT, "endTrace [%010d,%04d] -- null warn\n",
+            cacheSet, loc);
+    }
+    else {
+        ltpTrace *signature = new ltpTrace;
+        // traceLog(logLT, "endTrace vector size %d \n",
+        //     completedSignature->PCVector.size());
+        // signature->PCVector = completedSignature->PCVector;
+        m_history_table[cacheSet][loc].insert(signature);
+
+        //deallocate completed signature
+        deallocateSignature(cacheSet, loc);
+    }
 }
 
 //  TODO: modify to accept the request PC
@@ -160,7 +175,7 @@ void LTP::ltpTester()
     cacheSet = 0;
     loc = 1;
     PC = 0x0A;
-    allocateSignature(cacheSet, loc, PC);
+    startTrace(cacheSet, loc);
 
     //append a signature
     PC = 0xBD;

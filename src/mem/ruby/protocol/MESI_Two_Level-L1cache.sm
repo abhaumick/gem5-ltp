@@ -556,11 +556,11 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   }
 
   void enqueuePrefetch(Addr address, RubyRequestType type) {
-      enqueue(optionalQueue_out, RubyRequest, 1) {
-          out_msg.LineAddress := address;
-          out_msg.Type := type;
-          out_msg.AccessMode := RubyAccessMode:Supervisor;
-      }
+    enqueue(optionalQueue_out, RubyRequest, 1) {
+        out_msg.LineAddress := address;
+        out_msg.Type := type;
+        out_msg.AccessMode := RubyAccessMode:Supervisor;
+    }
   }
   
   //LTP Actions 
@@ -571,23 +571,31 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   }
 
   action(ltp_startTrace, "l_start", desc="Start a new trace") {
-  peek(mandatoryQueue_in, RubyRequest) {
-      L1Dcache.startTrace(in_msg.LineAddress, in_msg.ProgramCounter);
-    }
+    L1Dcache.startTrace(address);
   }
 
   action(ltp_endTrace, "l_end", desc="End the current trace") {
-  peek(mandatoryQueue_in, RubyRequest) {
-      L1Dcache.endTrace(in_msg.LineAddress, in_msg.ProgramCounter);
-    }
+    peek(mandatoryQueue_in, RubyRequest) {
+        L1Dcache.endTrace(in_msg.LineAddress, in_msg.ProgramCounter);
+      }
   }
 
   action(ltp_deleteTrace, "l_delete", desc="Delete the current trace") {
     L1Dcache.deleteTrace(address);
   }
 
-
-
+  // action(i_allocateTBE, "lp", desc="Allocate TBE (pop PC from mandatory queue)") {
+  //   check_allocate(TBEs);
+  //   assert(is_valid(cache_entry));
+  //   TBEs.allocate(address);
+  //   set_tbe(TBEs[address]);
+  //   tbe.isPrefetch := false;
+  //   tbe.Dirty := cache_entry.Dirty;
+  //   tbe.DataBlk := cache_entry.DataBlk;
+  //   peek(mandatoryQueue_in, RubyRequest) {
+  //     tbe.pc := in_msg.ProgramCounter;
+  //   }
+  // }
 
   // ACTIONS
   action(a_issueGETS, "a", desc="Issue GETS") {
@@ -932,19 +940,6 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     tbe.DataBlk := cache_entry.DataBlk;
   }
 
-  action(l_allocateTBE_withPC, "lp", desc="Allocate TBE (pop PC from mandatory queue)") {
-    check_allocate(TBEs);
-    assert(is_valid(cache_entry));
-    TBEs.allocate(address);
-    set_tbe(TBEs[address]);
-    tbe.isPrefetch := false;
-    tbe.Dirty := cache_entry.Dirty;
-    tbe.DataBlk := cache_entry.DataBlk;
-    peek(mandatoryQueue_in, RubyRequest) {
-      tbe.pc := in_msg.ProgramCounter;
-    }
-  }
-
   action(k_popMandatoryQueue, "k", desc="Pop mandatory queue.") {
     mandatoryQueue_in.dequeue(clockEdge());
   }
@@ -1100,11 +1095,10 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
 
   transition({NP,I}, Load, IS) {
     oo_allocateL1DCacheBlock;
-    l_allocateTBE_withPC;  //  ltp_action
+    i_allocateTBE;
     a_issueGETS;
     uu_profileDataMiss;
     po_observeMiss;
-    ltp_startTrace; //ltp_action
     k_popMandatoryQueue;
   }
 
@@ -1135,7 +1129,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
 
   transition({NP,I}, Ifetch, IS) {
     pp_allocateL1ICacheBlock;
-    l_allocateTBE_withPC; //  ltp_action
+    i_allocateTBE;
     ai_issueGETINSTR;
     uu_profileInstMiss;
     po_observeMiss;
@@ -1159,7 +1153,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
 
   transition({NP,I}, Store, IM) {
     oo_allocateL1DCacheBlock;
-    l_allocateTBE_withPC;  //  ltp_action
+    i_allocateTBE;
     b_issueGETX;
     uu_profileDataMiss;
     po_observeMiss;
@@ -1206,7 +1200,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   }
 
   transition(S, Store, SM) {
-    l_allocateTBE_withPC;   //  ltp_action
+    i_allocateTBE;
     c_issueUPGRADE;
     uu_profileDataMiss;
     k_popMandatoryQueue;

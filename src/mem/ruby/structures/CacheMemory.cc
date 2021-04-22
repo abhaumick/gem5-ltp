@@ -749,15 +749,15 @@ CacheMemory::htmCommitTransaction()
 }
 
 void
-CacheMemory::startTrace(Addr address, Addr pc)
+CacheMemory::startTrace(Addr address)
 {
     assert(address == makeLineAddress(address));
     int64_t cacheSet = addressToCacheSet(address);
     int loc = findTagInSet(cacheSet, address);
     // std::cerr<< "start Trace called with"<<address<< "  ," <<pc;
     m_ltp.logLT.print(::LoggerLT::Loc(__FILE__, __LINE__),
-        "$ startTrace: %016x, pc = %016x", address, pc);
-    m_ltp.allocateSignature(cacheSet, loc, pc);
+        "$ startTrace: %016x,", address);
+    m_ltp.startTrace(cacheSet, loc);
 }
 
 void
@@ -766,7 +766,13 @@ CacheMemory::addToTrace(Addr address, Addr pc)
     assert(address == makeLineAddress(address));
     int64_t cacheSet = addressToCacheSet(address);
     int loc = findTagInSet(cacheSet, address);
-    m_ltp.appendSignature(cacheSet, loc, pc);
+    if (loc == -1) {
+        m_ltp.logLT.print(::LoggerLT::Loc(__FILE__, __LINE__),
+            "$ addToTrace: panik : not found %016x, pc = %016x", address, pc);
+    }
+    else {
+        m_ltp.appendSignature(cacheSet, loc, pc);
+    }
 }
 
 void
@@ -777,10 +783,14 @@ CacheMemory::endTrace(Addr address, Addr pc)
     assert(address == makeLineAddress(address));
     int64_t cacheSet = addressToCacheSet(address);
     int loc = findTagInSet(cacheSet, address);
-    m_ltp.logLT.print(::LoggerLT::Loc(__FILE__, __LINE__),
-        "$ endTrace: %016x, pc = %016x", address, pc);
-    m_ltp.endTrace(cacheSet, loc);
-
+    //  Not Found
+    if (loc == -1) {
+        m_ltp.logLT.print(::LoggerLT::Loc(__FILE__, __LINE__),
+            "$ endTrace: panik : not found %016x, pc = %016x", address, pc);
+    }
+    else {
+        m_ltp.endTrace(cacheSet, loc);
+    }
 }
 
 void
@@ -789,8 +799,13 @@ CacheMemory::deleteTrace(Addr address)
     assert(address == makeLineAddress(address));
     int64_t cacheSet = addressToCacheSet(address);
     int loc = findTagInSet(cacheSet, address);
-    m_ltp.deallocateSignature(cacheSet, loc);
-
+    if (loc == -1) {
+        m_ltp.logLT.print(::LoggerLT::Loc(__FILE__, __LINE__),
+            "$ deleteTrace: panik : not found %016x, pc = %016x", address);
+    }
+    else {
+        m_ltp.deallocateSignature(cacheSet, loc);
+    }
 }
 
 bool

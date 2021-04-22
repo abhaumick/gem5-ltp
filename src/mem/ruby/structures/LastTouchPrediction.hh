@@ -98,7 +98,7 @@ public:
 
   LoggerLT logLT;
 
-  void allocateSignature(int64_t cacheSet, int loc, Addr PC);
+  void startTrace(int64_t cacheSet, int loc);
   void appendSignature(int64_t cacheSet, int loc, Addr PC);
   void deallocateSignature(int64_t cacheSet, int loc);
   void endTrace(int64_t cacheSet, int loc);

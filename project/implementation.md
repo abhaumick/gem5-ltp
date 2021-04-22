@@ -41,3 +41,13 @@ https://www.gem5.org/documentation/general_docs/ruby/MESI_Two_Level/
 ### Transitions
 - decide stalls
 - complete state machine
+
+
+## TODO
+
+- add disctinction (using a true/false) for completed traces and L1-Replacements in the middle of a ongoing trace
+  - resulting in trace discard.
+
+- Overload endTrace function : one without PC(invalids and replacements) and the other with current PC(load evict and store evict).
+
+

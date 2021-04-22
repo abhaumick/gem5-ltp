@@ -21,11 +21,11 @@ bm_args="${run_args}"
 
 gem5_cmd="${gem5_dir}/${gem5_opt}"
 exec_cmd="${gem5_cmd} ${gem5_args} -c ${toy_exec_dir}/${toy_exec} -o \"${toy_args}\""
-eval ${exec_cmd}
+# eval ${exec_cmd}
 
 debug_cmd="gdb --args ${gem5_dir}/${gem5_opt} ${gem5_args} -c ${toy_exec_dir}/${toy_exec} -o \"${toy_args}\""
-# echo ${debug_cmd}
-#eval ${debug_cmd}
+echo ${debug_cmd}
+eval ${debug_cmd}
 
 echo "Copying results to m5out"
 rm -rf  ${gem5_dir}/m5out/${bm_name} -v
