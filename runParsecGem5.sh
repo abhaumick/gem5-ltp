@@ -7,7 +7,8 @@ gem5_dir="${PWD}"
 gem5_opt="build/ECE666/gem5.opt"
 gem5_config="configs/example/se.py"
 
-gem5_exec="build/ECE666/gem5.opt configs/example/se.py"
+gem5_args="${gem5_dir}/${gem5_config} -n ${gem5_nCores} --ruby"
+gem5_exec="build/ECE666/gem5.opt ${gem5_args}"
 
 # TODO add args for ruby system and
 
@@ -40,7 +41,11 @@ cd ${run_path}
 bm_args="${run_args}"
 gem5_cmd="${gem5_dir}/${gem5_opt} ${gem5_dir}/${gem5_config}"
 exec_cmd="${gem5_cmd} -n ${gem5_nCores} --ruby -c ${bm_run_exec} -o \"${run_args}\""
-eval ${exec_cmd}
+# eval ${exec_cmd}
+
+debug_cmd="gdb --args ${gem5_dir}/${gem5_opt} ${gem5_args} -c ${bm_run_exec} -o \"${run_args}\""
+# echo ${debug_cmd}
+eval ${debug_cmd}
 
 echo "Copying results to m5out"
 rm -rf  ${gem5_dir}/m5out/${bm_name} -v
