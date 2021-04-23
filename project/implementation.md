@@ -7,7 +7,7 @@ https://www.gem5.org/documentation/general_docs/ruby/MESI_Two_Level/
 
 
 ## Changes to `.sm`
-
+Forward eviction to CPU might become an issue with O3 cpu
 ### Make Trace
 - Capture manadatoryRequest Load and Store
   - place into trace (list for now?)

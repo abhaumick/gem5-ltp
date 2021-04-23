@@ -1100,6 +1100,15 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     po_observeMiss;
     k_popMandatoryQueue;
   }
+  transition({NP,I}, Load_Evict, IS) {
+    oo_allocateL1DCacheBlock;
+    i_allocateTBE;
+    ltp_startTrace; //ltp_action
+    a_issueGETS;
+    uu_profileDataMiss;
+    po_observeMiss;
+    k_popMandatoryQueue;
+  }
 
   transition({NP,I}, PF_Load, PF_IS) {
     oo_allocateL1DCacheBlock;
@@ -1112,6 +1121,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition(PF_IS, Load, IS) {
     uu_profileDataMiss;
     ppm_observePfMiss;
+    ltp_startTrace; //ltp_action
     k_popMandatoryQueue;
   }
 
@@ -1130,7 +1140,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition({NP,I}, Ifetch, IS) {
     pp_allocateL1ICacheBlock;
     i_allocateTBE;
-    ltp_startTrace; //ltp_action
+    //ltp_startTrace; //ltp_action
     ai_issueGETINSTR;
     uu_profileInstMiss;
     po_observeMiss;
@@ -1152,7 +1162,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     k_popMandatoryQueue;
   }
 
-  transition({NP,I}, Store, IM) {
+  transition({NP,I}, {Store, Store_Evict}, IM) {
     oo_allocateL1DCacheBlock;
     i_allocateTBE;
     ltp_startTrace; //ltp_action
@@ -1196,6 +1206,28 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     k_popMandatoryQueue;
   }
 
+  transition(S, Load_Evict, I) {
+    h_load_hit;
+    uu_profileDataHit;
+    po_observeHit;
+    k_popMandatoryQueue;
+    forward_eviction_to_cpu;
+    ltp_endTrace; //ltp_action
+    ff_deallocateL1CacheBlock;
+  }
+
+  transition({E, M}, Load_Evict, M_I) {
+    h_load_hit;
+    uu_profileDataHit;
+    po_observeHit;
+    k_popMandatoryQueue;
+    forward_eviction_to_cpu;
+    i_allocateTBE;
+    ltp_deleteTrace; //ltp_action
+    g_issuePUTX;   // send data, but hold in case forwarded request
+    ff_deallocateL1CacheBlock;
+  }
+
   transition({S,E,M}, Ifetch) {
     h_ifetch_hit;
     uu_profileInstHit;
@@ -1203,7 +1235,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     k_popMandatoryQueue;
   }
 
-  transition(S, Store, SM) {
+  transition(S, {Store, Store_Evict}, SM) {
     i_allocateTBE;
     c_issueUPGRADE;
     uu_profileDataMiss;
@@ -1232,6 +1264,20 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     ltp_addToTrace; //ltp_action
     k_popMandatoryQueue;
   }
+
+  transition({E,M}, Store_Evict, M_I) {
+    hh_store_hit;
+    uu_profileDataHit;
+    po_observeHit;
+    k_popMandatoryQueue;
+    forward_eviction_to_cpu;
+    i_allocateTBE;
+    ltp_deleteTrace; //ltp_action
+    g_issuePUTX;   // send data, but hold in case forwarded request
+    ff_deallocateL1CacheBlock;
+  }
+
+
 
   transition(E, {L1_Replacement, PF_L1_Replacement}, M_I) {
     // silent E replacement??

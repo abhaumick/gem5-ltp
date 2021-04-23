@@ -105,7 +105,7 @@ void LTP::appendSignature(int64_t cacheSet, int loc, Addr PC)
     else {
         signature->PCVector.push_back(PC);
         signature->valid = true;
-        traceLog(logLT, "kalm  : Added PC '%16x' to [%010d,%04d] \n",
+        traceLog(logLT, "kalm  : appendSig PC '%16x' to [%010d,%04d] \n",
             PC, cacheSet, loc);
     }
 }
@@ -209,7 +209,7 @@ LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
         //traceLog(logLT, "kalm  : Last Touch No Match Found! \n");
     }
 
-    return false;
+    return matchFlag;
 }
 
 
