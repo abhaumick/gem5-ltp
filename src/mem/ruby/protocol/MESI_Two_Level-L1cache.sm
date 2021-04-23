@@ -1244,7 +1244,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
 
   transition(S, {L1_Replacement, PF_L1_Replacement}, I) {
     forward_eviction_to_cpu;
-    ltp_endTrace; //ltp_action
+    ltp_deleteTrace; //ltp_action
     ff_deallocateL1CacheBlock;
   }
 
@@ -1283,7 +1283,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     // silent E replacement??
     forward_eviction_to_cpu;
     i_allocateTBE;
-    ltp_endTrace; //ltp_action
+    ltp_deleteTrace; //ltp_action
     g_issuePUTX;   // send data, but hold in case forwarded request
     ff_deallocateL1CacheBlock;
   }
@@ -1315,7 +1315,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     forward_eviction_to_cpu;
     i_allocateTBE;
     g_issuePUTX;   // send data, but hold in case forwarded request
-    ltp_endTrace;  // ltp_action
+    ltp_deleteTrace;  // ltp_action
     ff_deallocateL1CacheBlock;
   }
 
