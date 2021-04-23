@@ -27,7 +27,7 @@ void LoggerLT::setup(const char * prefix, int id)
 
 std::ostream& operator<<(std::ostream & out, const ltpTrace & t)
 {
-    out << t.valid << " ";
+    out << "ltpTrace : " << t.valid << " ";
     if (t.valid) {
         for (auto pc : t.PCVector)
             out << std::hex << pc << " -> ";
@@ -73,82 +73,141 @@ LTP::init (int num_sets, int assoc, int cache_id)
 void LTP::startTrace(int64_t cacheSet, int loc)
 {
     ltpTrace *signature = m_signature_table[cacheSet][loc];
-    assert(signature == NULL || signature == nullptr);
+    // assert(signature == NULL || signature == nullptr);
+    if (signature == NULL || signature == nullptr) {
+        signature = new ltpTrace;
+        signature->valid = false;
+        m_signature_table[cacheSet][loc] = signature;
 
-    signature = new ltpTrace;
-    //
-    // signature->PCVector.push_back(PC);
-    signature->valid = true;
-
-    m_signature_table[cacheSet][loc] = signature;
-    traceLog(logLT, "alloc sig %x with PC '%016x' to [%010d,%04d] \n",
-        signature, cacheSet, loc);
+        traceLog(logLT, "kalm  : startTrace sig %x to [%010d,%04d] \n",
+            signature, cacheSet, loc);
+    }
+    else {
+        traceLog(logLT, "panik : startTrace sig %x to [%010d,%04d] exists\n",
+            signature, cacheSet, loc);
+    }
 }
+
+/**
+ * @brief
+ *
+ * @param cacheSet
+ * @param loc
+ * @param PC
+ */
 void LTP::appendSignature(int64_t cacheSet, int loc, Addr PC)
 {
     ltpTrace *signature = m_signature_table[cacheSet][loc];
-    assert(signature->valid = true);
-
-    signature->PCVector.push_back(PC);
-    traceLog(logLT, "Added PC '%16x' to [set,idx] = [%010d,%04d] Trace \n",
-        PC, cacheSet, loc);
+    if (signature == nullptr || signature == NULL) {
+        traceLog(logLT, "panik : appendSig : [%010d,%04d] = null \n",
+            cacheSet, loc);
+    }
+    else {
+        signature->PCVector.push_back(PC);
+        signature->valid = true;
+        traceLog(logLT, "kalm  : Added PC '%16x' to [%010d,%04d] \n",
+            PC, cacheSet, loc);
+    }
 }
+
+/**
+ * @brief
+ *
+ * @param cacheSet
+ * @param loc
+ */
 void LTP::deallocateSignature(int64_t cacheSet, int loc)
 {
     ltpTrace *signature = m_signature_table[cacheSet][loc];
-    if (signature != NULL) {
+    if (signature == NULL || signature == nullptr) {
+        traceLog(logLT, "panik : deallocateSig : [%010d,%04d] null \n",
+            cacheSet, loc);
+    }
+    else {
+        traceLog(logLT, "kalm  : deallocateSig : [%010d,%04d] \n",
+            cacheSet, loc);
         delete (signature);
         m_signature_table[cacheSet][loc] = nullptr;
     }
 }
 
+/**
+ * @brief
+ *
+ * @param cacheSet
+ * @param loc
+ */
 void LTP::endTrace(int64_t cacheSet, int loc)
 {
     ltpTrace *completedSignature = m_signature_table[cacheSet][loc];
 
-    traceLog(logLT, "endTrace [%010d,%04d]\n",
-        cacheSet, loc);
     //Allocate a signature in history table and copy the ltpTrace
     if (completedSignature == NULL || completedSignature == nullptr) {
-        traceLog(logLT, "endTrace [%010d,%04d] -- null warn\n",
+        traceLog(logLT, "panik : endTrace [%010d,%04d] -- null warn\n",
             cacheSet, loc);
     }
     else {
-        ltpTrace *signature = new ltpTrace;
-        // traceLog(logLT, "endTrace vector size %d \n",
-        //     completedSignature->PCVector.size());
-        // signature->PCVector = completedSignature->PCVector;
-        m_history_table[cacheSet][loc].insert(signature);
-
+        if (completedSignature->valid)
+        {
+            ltpTrace *signature = new ltpTrace;
+            traceLog(logLT, "endTrace vector size %d \n",
+            completedSignature->PCVector.size());
+            signature->PCVector = completedSignature->PCVector;
+            signature->valid = true;
+            m_history_table[cacheSet][loc].insert(signature);
+            traceLog(logLT, printHistoryTable(cacheSet, loc));
+        }
         //deallocate completed signature
+        traceLog(logLT, "kalm  : endTrace [%010d,%04d]\n",
+            cacheSet, loc);
         deallocateSignature(cacheSet, loc);
     }
 }
 
-//  TODO: modify to accept the request PC
-//          check if match AFTER appending incoming PC
-// bool LTP::checkLastTouch_unused(int cacheSet, int loc)
-// {
-//     std::set<ltpTrace*> traceHistory = m_history_table[cacheSet][loc];
-//     //check if current signature is in history.
-//     return (traceHistory.find(m_signature_table[cacheSet][loc])
-//             != traceHistory.end());
-// }
-
 bool
-LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC) //TODO
+LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
 {
-    //  std::set<ltpTrace*> traceHistory = m_history_table[cacheSet][loc];
-    // //check if current signature is in history.
+    std::set<ltpTrace*> traceHistory = m_history_table[cacheSet][loc];
+    //check if current signature is in history.
+    ltpTrace tempSignature;
+    bool matchFlag = false;
+    if (m_signature_table[cacheSet][loc] != NULL
+        && m_signature_table[cacheSet][loc] != nullptr )
+    {
+        tempSignature = *m_signature_table[cacheSet][loc];
+        tempSignature.PCVector.push_back(PC);
 
-    // ltpTrace tempSignature= *m_signature_table[cacheSet][loc];
-    // assert(tempSignature.valid);
-
-    // tempSignature.PCVector.push_back(PC);
 
 
-    // return (traceHistory.find(tempSignature)
-    //         != traceHistory.end());
+        //  Find matching trace in history
+        for (auto histTrace : m_history_table[cacheSet][loc]) {
+            if (histTrace == NULL || histTrace == nullptr) {
+                continue;
+            }
+            else {
+                if (histTrace->valid) {
+                    if (histTrace->PCVector == tempSignature.PCVector) {
+                        matchFlag = true;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        traceLog(logLT, "panik : checkLastTouch [%010d,%04d] -- null warn\n",
+            cacheSet, loc);
+    }
+
+    if (matchFlag)
+    {
+        traceLog(logLT, "kalm  : Last Touch Match found for [%010d,%04d] \n",
+            cacheSet, loc);
+    }
+    else
+    {
+        //traceLog(logLT, "kalm  : Last Touch No Match Found! \n");
+    }
 
     return false;
 }
@@ -214,7 +273,24 @@ std::string LTP::printHistoryTable() const
     std::stringstream ss;
     ss << "History Table \n";
     ss << "------------- \n";
+    for (auto set = 0; set < m_cache_num_sets; ++ set) {
+        for (auto idx = 0; idx < m_cache_assoc; ++ idx) {
+
+        }
+    }
     ss << "------------- \n";
+    return ss.str();
+}
+
+std::string LTP::printHistoryTable(int64_t cacheSet, int loc) const
+{
+    std::stringstream ss;
+
+    ss << "History Table : [" << cacheSet << "," << loc << "] \n";
+    auto hist = m_history_table[cacheSet][loc];
+    for (auto item : hist) {
+        ss << * item << " \n";
+    }
     return ss.str();
 }
 

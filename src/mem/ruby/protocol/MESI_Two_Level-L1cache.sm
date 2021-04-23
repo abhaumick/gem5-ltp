@@ -575,9 +575,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   }
 
   action(ltp_endTrace, "l_end", desc="End the current trace") {
-    peek(mandatoryQueue_in, RubyRequest) {
-        L1Dcache.endTrace(in_msg.LineAddress, in_msg.ProgramCounter);
-      }
+    L1Dcache.endTrace(address);
   }
 
   action(ltp_deleteTrace, "l_delete", desc="Delete the current trace") {
@@ -1096,6 +1094,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition({NP,I}, Load, IS) {
     oo_allocateL1DCacheBlock;
     i_allocateTBE;
+    ltp_startTrace; //ltp_action
     a_issueGETS;
     uu_profileDataMiss;
     po_observeMiss;
@@ -1105,6 +1104,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition({NP,I}, PF_Load, PF_IS) {
     oo_allocateL1DCacheBlock;
     i_allocateTBE;
+    ltp_startTrace; //ltp_action
     pa_issuePfGETS;
     pq_popPrefetchQueue;
   }
@@ -1130,6 +1130,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition({NP,I}, Ifetch, IS) {
     pp_allocateL1ICacheBlock;
     i_allocateTBE;
+    ltp_startTrace; //ltp_action
     ai_issueGETINSTR;
     uu_profileInstMiss;
     po_observeMiss;
@@ -1154,6 +1155,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition({NP,I}, Store, IM) {
     oo_allocateL1DCacheBlock;
     i_allocateTBE;
+    ltp_startTrace; //ltp_action
     b_issueGETX;
     uu_profileDataMiss;
     po_observeMiss;
@@ -1163,6 +1165,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition({NP,I}, PF_Store, PF_IM) {
     oo_allocateL1DCacheBlock;
     i_allocateTBE;
+    ltp_startTrace; //ltp_action
     pb_issuePfGETX;
     pq_popPrefetchQueue;
   }
@@ -1188,6 +1191,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition({S,E,M}, Load) {
     h_load_hit;
     uu_profileDataHit;
+    ltp_addToTrace; //ltp_action
     po_observeHit;
     k_popMandatoryQueue;
   }
@@ -1208,12 +1212,14 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
 
   transition(S, {L1_Replacement, PF_L1_Replacement}, I) {
     forward_eviction_to_cpu;
+    ltp_endTrace; //ltp_action
     ff_deallocateL1CacheBlock;
   }
 
   transition(S, Inv, I) {
     forward_eviction_to_cpu;
     fi_sendInvAck;
+    ltp_endTrace; //ltp_action
     l_popRequestQueue;
   }
 
@@ -1223,6 +1229,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     hh_store_hit;
     uu_profileDataHit;
     po_observeHit;
+    ltp_addToTrace; //ltp_action
     k_popMandatoryQueue;
   }
 
@@ -1230,6 +1237,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     // silent E replacement??
     forward_eviction_to_cpu;
     i_allocateTBE;
+    ltp_endTrace; //ltp_action
     g_issuePUTX;   // send data, but hold in case forwarded request
     ff_deallocateL1CacheBlock;
   }
@@ -1238,12 +1246,14 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     // don't send data
     forward_eviction_to_cpu;
     fi_sendInvAck;
+    ltp_endTrace; //ltp_action
     l_popRequestQueue;
   }
 
   transition(E, Fwd_GETX, I) {
     forward_eviction_to_cpu;
     d_sendDataToRequestor;
+    ltp_endTrace; //ltp_action
     l_popRequestQueue;
   }
 
@@ -1272,7 +1282,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition(M, Inv, I) {
     forward_eviction_to_cpu;
     f_sendDataToL2;
-    ltp_endTrace; // ltp_action
+    ltp_endTrace; //ltp_action
     l_popRequestQueue;
   }
 
@@ -1284,6 +1294,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition(M, Fwd_GETX, I) {
     forward_eviction_to_cpu;
     d_sendDataToRequestor;
+    ltp_endTrace; //ltp_action
     l_popRequestQueue;
   }
 
@@ -1307,7 +1318,6 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   // Transitions from IS
   transition({IS, IS_I}, Inv, IS_I) {
     fi_sendInvAck;
-    ltp_deleteTrace; //ltp_action
     l_popRequestQueue;
   }
 
@@ -1335,6 +1345,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition(IS_I, Data_all_Acks, I) {
     u_writeDataToL1Cache;
     hx_load_hit;
+    ltp_deleteTrace; //ltp_action
     s_deallocateTBE;
     o_popIncomingResponseQueue;
     kd_wakeUpDependents;
@@ -1343,6 +1354,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition(PF_IS_I, Data_all_Acks, I) {
     s_deallocateTBE;
     o_popIncomingResponseQueue;
+    ltp_deleteTrace; //ltp_action
     kd_wakeUpDependents;
   }
 
@@ -1366,6 +1378,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition(IS_I, DataS_fromL1, I) {
     u_writeDataToL1Cache;
     j_sendUnblock;
+    ltp_deleteTrace; //ltp_action
     hx_load_hit;
     s_deallocateTBE;
     o_popIncomingResponseQueue;
@@ -1375,6 +1388,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   transition(PF_IS_I, DataS_fromL1, I) {
     j_sendUnblock;
     s_deallocateTBE;
+    ltp_deleteTrace; //ltp_action
     o_popIncomingResponseQueue;
     kd_wakeUpDependents;
   }

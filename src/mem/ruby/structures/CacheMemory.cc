@@ -768,7 +768,7 @@ CacheMemory::addToTrace(Addr address, Addr pc)
     int loc = findTagInSet(cacheSet, address);
     if (loc == -1) {
         m_ltp.logLT.print(::LoggerLT::Loc(__FILE__, __LINE__),
-            "$ addToTrace: panik : not found %016x, pc = %016x", address, pc);
+            "panik : $ addToTrace : not found %016x, pc = %016x", address, pc);
     }
     else {
         m_ltp.appendSignature(cacheSet, loc, pc);
@@ -776,7 +776,7 @@ CacheMemory::addToTrace(Addr address, Addr pc)
 }
 
 void
-CacheMemory::endTrace(Addr address, Addr pc)
+CacheMemory::endTrace(Addr address)
 {
     // reset signature for <cacheSet, loc>
     //add this signature to the history table set for <cacheSet, loc>
@@ -786,7 +786,7 @@ CacheMemory::endTrace(Addr address, Addr pc)
     //  Not Found
     if (loc == -1) {
         m_ltp.logLT.print(::LoggerLT::Loc(__FILE__, __LINE__),
-            "$ endTrace: panik : not found %016x, pc = %016x", address, pc);
+            "panik : $ endTrace: not found %016x", address);
     }
     else {
         m_ltp.endTrace(cacheSet, loc);
@@ -801,7 +801,7 @@ CacheMemory::deleteTrace(Addr address)
     int loc = findTagInSet(cacheSet, address);
     if (loc == -1) {
         m_ltp.logLT.print(::LoggerLT::Loc(__FILE__, __LINE__),
-            "$ deleteTrace: panik : not found %016x, pc = %016x", address);
+            "panik : $ deleteTrace: not found %016x", address);
     }
     else {
         m_ltp.deallocateSignature(cacheSet, loc);
@@ -814,6 +814,10 @@ CacheMemory::checkLastTouch(Addr address, Addr pc)
     assert(address == makeLineAddress(address));
     int64_t cacheSet = addressToCacheSet(address);
     int loc = findTagInSet(cacheSet, address);
+    if (loc == -1) {
+        m_ltp.logLT.print(::LoggerLT::Loc(__FILE__, __LINE__),
+            "panik : $ checkLastTouch : not found %016x, pc = %016x", address);
+    }
     return m_ltp.checkLastTouch(cacheSet, loc, pc);
 }
 

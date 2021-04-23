@@ -199,7 +199,7 @@ structure (CacheMemory, external = "yes") {
   bool isTagPresent(Addr);
   void startTrace(Addr address);
   void addToTrace(Addr address, Addr pc);  
-  void endTrace(Addr address, Addr pc);
+  void endTrace(Addr address);
   void deleteTrace(Addr address);
   bool checkLastTouch(Addr address, Addr pc);
   Cycles getTagLatency();

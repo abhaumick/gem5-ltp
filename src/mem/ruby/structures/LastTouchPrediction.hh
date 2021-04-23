@@ -106,6 +106,7 @@ public:
   void ltpTester();
   std::string print() const;
   std::string printHistoryTable() const;
+  std::string printHistoryTable(int64_t cacheSet, int loc) const;
   std::string printSignatureTable() const;
 
 private:

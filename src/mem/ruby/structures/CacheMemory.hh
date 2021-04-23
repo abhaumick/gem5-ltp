@@ -153,7 +153,7 @@ class CacheMemory : public SimObject
     // LoggerLT logLT;
     void startTrace(Addr address);
     void addToTrace(Addr address, Addr pc);  //  Determine Args
-    void endTrace(Addr address, Addr pc);
+    void endTrace(Addr address);
     void deleteTrace(Addr addrss);
     // bool checkLastTouch_unused(int cacheSet, int loc);
     bool checkLastTouch(Addr address, Addr pc);

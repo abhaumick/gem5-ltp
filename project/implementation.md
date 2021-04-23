@@ -42,6 +42,16 @@ https://www.gem5.org/documentation/general_docs/ruby/MESI_Two_Level/
 - decide stalls
 - complete state machine
 
+## Functions
+
+|                 |                                                     |
+|-----------------|-----------------------------------------------------|
+|start trace      |		Allocate an entry without a PC				            |
+|end trace        |		End the current trace and add it to history table			|
+|delete trace		  |   End the current trace but don't add it to history table |
+|add to Trace     |		Add the current PC to the trace if it exists.				|
+
+
 
 ## TODO
 
