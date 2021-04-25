@@ -1212,7 +1212,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     po_observeHit;
     k_popMandatoryQueue;
     forward_eviction_to_cpu;
-    ltp_endTrace; //ltp_action
+    ltp_deleteTrace; //ltp_action
     ff_deallocateL1CacheBlock;
   }
 
