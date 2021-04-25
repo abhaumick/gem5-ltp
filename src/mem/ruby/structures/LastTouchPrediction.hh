@@ -42,6 +42,7 @@ Data Structures
 
 */
 
+#define HASH_INIT 0xFFFFFFFF
 class LoggerLT : public Logger
 {
 public:
@@ -85,6 +86,8 @@ struct ltpTrace
   uint32_t hash;
   bool valid;
 
+  ltpTrace() : hash(HASH_INIT), valid(false) {}
+
   // friend std::ostream& operator<<(std::ostream & out, const ltpTrace & t);
 };
 
@@ -98,7 +101,7 @@ public:
   LTP(int numberOfSets, int associativity, int cache_id);
   ~LTP() {};
 
-  void init(int num_sets, int assoc, int cache_id);
+  void init(int num_sets, int assoc, int cache_id, bool log_enabled);
 
   LoggerLT logLT;
 

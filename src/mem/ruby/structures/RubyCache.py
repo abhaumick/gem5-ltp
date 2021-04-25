@@ -41,7 +41,8 @@ class RubyCache(SimObject):
     block_size = Param.MemorySize("0B", "block size in bytes. \
                                             0 means default RubyBlockSize");
     has_traces = Param.Bool(False, "has records of acces traces");
-    cache_id = Param.Int(1, "unique id for a CacheMemory instance")
+    cache_id = Param.Int(1, "unique id for a CacheMemory instance");
+    log_enabled = Param.Bool(False, "enables LTP log generation")
 
     dataArrayBanks = Param.Int(1, "Number of banks for the data array")
     tagArrayBanks = Param.Int(1, "Number of banks for the tag array")

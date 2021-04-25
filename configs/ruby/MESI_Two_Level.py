@@ -78,7 +78,8 @@ def create_system(options, full_system, system, dma_ports, bootmem,
                             start_index_bit = block_size_bits,
                             is_icache = False,
                             has_traces = True,
-                            cache_id = i)
+                            cache_id = i,
+                            log_enabled = True)
 
         prefetcher = RubyPrefetcher()
 
