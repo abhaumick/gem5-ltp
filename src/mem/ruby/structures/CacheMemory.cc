@@ -75,6 +75,7 @@ CacheMemory::CacheMemory(const Params &p)
     m_is_instruction_only_cache = p.is_icache;
     m_has_traces = p.has_traces;
     m_cache_id = p.cache_id;
+    m_log_enabled = p.log_enabled;
     // if (m_has_traces)
     //     logLT.setup(m_cache_id);
 
@@ -108,7 +109,7 @@ CacheMemory::init()
     }
 
     if (m_has_traces) {
-        m_ltp.init(m_cache_num_sets, m_cache_assoc, m_cache_id);
+        m_ltp.init(m_cache_num_sets, m_cache_assoc, m_cache_id, m_log_enabled);
     }
 
 }

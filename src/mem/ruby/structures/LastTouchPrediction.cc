@@ -11,18 +11,24 @@
 
 #include "mem/ruby/structures/LastTouchPrediction.hh"
 
-void LoggerLT::setup(const char * prefix, int id)
+void LoggerLT::setup(const char * prefix, int id, bool enabled)
 {
     this->prefix = prefix;
+    this->enabled = enabled;
 
-    //  Append cache Id to Log name
-    char fileName[20];
-    sprintf(fileName, "LogLTP_%d.log", id);
-    logFile.open(fileName, std::ofstream::out);
-    if (logFile.is_open())
-        std::cout << "trace: logFile " << id << " - Open Succesful \n";
-    else
-        std::cout << "trace: logFile " << id << " - Open Failed \n";
+    if (enabled) {
+        //  Append cache Id to Log name
+        char fileName[20];
+        sprintf(fileName, "LogLTP_%d.log", id);
+        logFile.open(fileName, std::ofstream::out);
+        if (logFile.is_open())
+            std::cout << "trace: logFile " << id << " - Open Succesful \n";
+        else
+            std::cout << "trace: logFile " << id << " - Open Failed \n";
+    }
+    else {
+        std::cout << "trace: logFile " << id << " - Disabled! \n";
+    }
 }
 
 std::ostream& operator<<(std::ostream & out, const ltpTrace & t)
@@ -44,7 +50,7 @@ LTP::LTP(int num_sets, int assoc, int cache_id)
 {}
 
 void
-LTP::init (int num_sets, int assoc, int cache_id)
+LTP::init (int num_sets, int assoc, int cache_id, bool logEnabled)
 {
     m_cache_num_sets = num_sets;
     m_cache_assoc = assoc;
@@ -52,7 +58,7 @@ LTP::init (int num_sets, int assoc, int cache_id)
 
     logPrefix = "";
     logPrefix = "trace " + std::to_string(m_cache_id) + " : ";
-    logLT.setup(logPrefix.c_str(), m_cache_id);
+    logLT.setup(logPrefix.c_str(), m_cache_id, logEnabled);
     traceLog(logLT, "log setup done \n");
 
     m_signature_table.resize(m_cache_num_sets,
@@ -104,6 +110,7 @@ void LTP::appendSignature(int64_t cacheSet, int loc, Addr PC)
     }
     else {
         signature->PCVector.push_back(PC);
+        signature->hash = hashFunction(signature->hash, PC);
         signature->valid = true;
         traceLog(logLT, "kalm  : appendSig PC '%16x' to [%010d,%04d] \n",
             PC, cacheSet, loc);
@@ -153,6 +160,7 @@ void LTP::endTrace(int64_t cacheSet, int loc)
             traceLog(logLT, "endTrace vector size %d \n",
             completedSignature->PCVector.size());
             signature->PCVector = completedSignature->PCVector;
+            signature->hash = completedSignature->hash;
             signature->valid = true;
             m_history_table[cacheSet][loc].insert(signature);
             traceLog(logLT, printHistoryTable(cacheSet, loc));
@@ -170,14 +178,15 @@ LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
     std::set<ltpTrace*> traceHistory = m_history_table[cacheSet][loc];
     //check if current signature is in history.
     ltpTrace tempSignature;
-    bool matchFlag = false;
+    bool PCFlag = false;
+    bool hashFlag = false;
+    int matchSize;
     if (m_signature_table[cacheSet][loc] != NULL
         && m_signature_table[cacheSet][loc] != nullptr )
     {
         tempSignature = *m_signature_table[cacheSet][loc];
         tempSignature.PCVector.push_back(PC);
-
-
+        tempSignature.hash = hashFunction(tempSignature.hash, PC);
 
         //  Find matching trace in history
         for (auto histTrace : m_history_table[cacheSet][loc]) {
@@ -187,7 +196,11 @@ LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
             else {
                 if (histTrace->valid) {
                     if (histTrace->PCVector == tempSignature.PCVector) {
-                        matchFlag = true;
+                        PCFlag = true;
+                        matchSize = histTrace->PCVector.size();
+                    }
+                    if (hisTrace->hash == tempSignature->hash) {
+                        hashFlag = true;
                     }
                 }
             }
@@ -199,20 +212,25 @@ LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
             cacheSet, loc);
     }
 
-    if (matchFlag)
+    if (PCFlag || hashFlag)
     {
-        traceLog(logLT, "kalm  : Last Touch Match found for [%010d,%04d] \n",
-            cacheSet, loc);
+        traceLog(logLT, "kalm  : PC Touch Match : %d for
+        [%010d,%04d] of size %d \n Hash Touch Match : %d",
+        PCFlag, cacheSet, loc, matchSize, hashFlag);
     }
     else
     {
         //traceLog(logLT, "kalm  : Last Touch No Match Found! \n");
     }
 
-    return matchFlag;
+    return PCFlag;
 }
 
 
+uint32_t  LTP::hashFunction(uint32_t A, uint32_t B)
+{
+    return A ^ B; //TODO : Implement truncated signature
+}
 
 void LTP::ltpTester()
 {

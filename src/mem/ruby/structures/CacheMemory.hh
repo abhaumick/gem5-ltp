@@ -203,6 +203,7 @@ class CacheMemory : public SimObject
     int m_block_size;
     bool m_has_traces;
     int m_cache_id;
+    int m_log_enabled;
 
     /**
      * We store all the ReplacementData in a 2-dimensional array. By doing

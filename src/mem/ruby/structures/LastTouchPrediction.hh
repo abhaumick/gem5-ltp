@@ -57,7 +57,7 @@ public:
 
   void setPrefix (const char * prefix);
 
-  void setup(const char * prefix, int id);
+  void setup(const char * prefix, int id, bool enabled);
 
   ~LoggerLT()
   {
@@ -66,10 +66,13 @@ public:
   }
 
 protected:
+  bool enabled;
   std::ofstream logFile;
   void log(const Loc &loc, std::string s) override
   {
-    logFile << s << std::flush;
+    if (enabled) {
+      logFile << s << std::flush;
+    }
   }
 };
 
@@ -79,6 +82,7 @@ protected:
 struct ltpTrace
 {
   std::vector<Addr> PCVector;
+  uint32_t hash;
   bool valid;
 
   // friend std::ostream& operator<<(std::ostream & out, const ltpTrace & t);
@@ -100,6 +104,7 @@ public:
 
   void startTrace(int64_t cacheSet, int loc);
   void appendSignature(int64_t cacheSet, int loc, Addr PC);
+  uint32_t  hashFunction(uint32_t A, uint32_t B);
   void deallocateSignature(int64_t cacheSet, int loc);
   void endTrace(int64_t cacheSet, int loc);
   bool checkLastTouch(int64_t cacheSet, int loc, Addr PC);
