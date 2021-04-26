@@ -1065,15 +1065,15 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
   //*****************************************************
 
   // Transitions for Load/Store/Replacement/WriteBack from transient states
-  transition({IS, IM, IS_I, M_I, SM, SINK_WB_ACK}, {Load, Ifetch, Store, L1_Replacement}) {
+  transition({IS, IM, IS_I, M_I, SM, SINK_WB_ACK}, {Load, Ifetch, Store, Load_Evict, Store_Evict, L1_Replacement}) {
     z_stallAndWaitMandatoryQueue;
   }
 
-  transition({PF_IS, PF_IS_I}, {Store, L1_Replacement}) {
+  transition({PF_IS, PF_IS_I}, {Store, Store_Evict, L1_Replacement}) {
     z_stallAndWaitMandatoryQueue;
   }
 
-  transition({PF_IM, PF_SM}, {Load, Ifetch, L1_Replacement}) {
+  transition({PF_IM, PF_SM}, {Load, Load_Evict, Ifetch, L1_Replacement}) {
     z_stallAndWaitMandatoryQueue;
   }
 
