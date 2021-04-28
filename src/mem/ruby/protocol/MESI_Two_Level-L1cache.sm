@@ -1125,7 +1125,13 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     k_popMandatoryQueue;
   }
 
-  transition(PF_IS_I, Load, IS_I) {
+  transition(PF_IS, Load_Evict, IS) {
+    uu_profileDataMiss;
+    ppm_observePfMiss;
+    k_popMandatoryQueue;
+  }
+
+  transition(PF_IS_I, Load, Load_Evict, IS_I) {
     uu_profileDataMiss;
     ppm_observePfMiss;
     k_popMandatoryQueue;
@@ -1180,13 +1186,13 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     pq_popPrefetchQueue;
   }
 
-  transition(PF_IM, Store, IM) {
+  transition(PF_IM, {Store, Store_Evict}, IM) {
     uu_profileDataMiss;
     ppm_observePfMiss;
     k_popMandatoryQueue;
   }
 
-  transition(PF_SM, Store, SM) {
+  transition(PF_SM, {Store, Store_Evict}, SM) {
     uu_profileDataMiss;
     ppm_observePfMiss;
     k_popMandatoryQueue;
