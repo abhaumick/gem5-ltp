@@ -147,7 +147,7 @@ void LTP::deallocateSignature(int64_t cacheSet, int loc)
 void LTP::endTrace(int64_t cacheSet, int loc)
 {
     ltpTrace *completedSignature = m_signature_table[cacheSet][loc];
-
+    bool isPresent = false;
     //Allocate a signature in history table and copy the ltpTrace
     if (completedSignature == NULL || completedSignature == nullptr) {
         traceLog(logLT, "panik : endTrace [%010d,%04d] -- null warn\n",
@@ -156,14 +156,45 @@ void LTP::endTrace(int64_t cacheSet, int loc)
     else {
         if (completedSignature->valid)
         {
-            ltpTrace *signature = new ltpTrace;
-            traceLog(logLT, "endTrace vector size %d \n",
-            completedSignature->PCVector.size());
-            signature->PCVector = completedSignature->PCVector;
-            signature->hash = completedSignature->hash;
-            signature->valid = true;
-            m_history_table[cacheSet][loc].insert(signature);
-            traceLog(logLT, printHistoryTable(cacheSet, loc));
+            for (auto histTrace : m_history_table[cacheSet][loc]) {
+                if (histTrace == NULL || histTrace == nullptr) {
+                    continue;
+                }
+                else {
+                    if (histTrace->valid) {
+                        // True-> simply increment pred counter
+                        if (histTrace->PCVector
+                            == completedSignature->PCVector)
+                        {
+                           if (histTrace->predCount < CONFIDENCE_COUNT)
+                            {
+                                histTrace->predCount++;
+                            }
+                            isPresent = true;
+                            traceLog(logLT,
+                            "End trace match. Pred counter: %d \n",
+                            histTrace->predCount);
+                        }
+                        // if (histTrace->hash == completedSignature.hash) {
+                        //     hashFlag = true;
+                        //     hashMatchSize = tempSignature.PCVector.size();
+                        //     matchedHash = tempSignature.hash;
+                        // }
+                    }
+                }
+            }
+            //False -> then make a new signature and insert in history table
+            if (!isPresent)
+            {
+                ltpTrace *signature = new ltpTrace;
+                traceLog(logLT, "New endTrace vector size %d \n",
+                completedSignature->PCVector.size());
+                signature->PCVector = completedSignature->PCVector;
+                signature->hash = completedSignature->hash;
+                signature->valid = true;
+                m_history_table[cacheSet][loc].insert(signature);
+                traceLog(logLT, printHistoryTable(cacheSet, loc));
+            }
         }
         //deallocate completed signature
         traceLog(logLT, "kalm  : endTrace [%010d,%04d]\n",
@@ -198,7 +229,8 @@ LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
             }
             else {
                 if (histTrace->valid) {
-                    if (histTrace->PCVector == tempSignature.PCVector) {
+                    if (histTrace->PCVector == tempSignature.PCVector &&
+                        histTrace->predCount == CONFIDENCE_COUNT ) {
                         PCFlag = true;
                         matchSize = histTrace->PCVector.size();
                     }

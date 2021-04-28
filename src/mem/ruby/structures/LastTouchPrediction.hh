@@ -43,6 +43,7 @@ Data Structures
 */
 
 #define HASH_INIT 0xFFFFFFFF
+#define CONFIDENCE_COUNT 2
 class LoggerLT : public Logger
 {
 public:
@@ -85,8 +86,9 @@ struct ltpTrace
   std::vector<Addr> PCVector;
   uint32_t hash;
   bool valid;
+  int predCount;
 
-  ltpTrace() : hash(HASH_INIT), valid(false) {}
+  ltpTrace() : hash(HASH_INIT), valid(false), predCount(0) {}
 
   // friend std::ostream& operator<<(std::ostream & out, const ltpTrace & t);
 };
