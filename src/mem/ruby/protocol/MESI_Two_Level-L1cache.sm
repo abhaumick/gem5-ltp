@@ -1216,22 +1216,22 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     h_load_hit;
     uu_profileDataHit;
     po_observeHit;
-    k_popMandatoryQueue;
     forward_eviction_to_cpu;
     ltp_deleteTrace; //ltp_action
     ff_deallocateL1CacheBlock;
+    k_popMandatoryQueue;
   }
 
   transition({E, M}, Load_Evict, M_I) {
     h_load_hit;
     uu_profileDataHit;
     po_observeHit;
-    k_popMandatoryQueue;
     forward_eviction_to_cpu;
     i_allocateTBE;
     ltp_deleteTrace; //ltp_action
     g_issuePUTX;   // send data, but hold in case forwarded request
     ff_deallocateL1CacheBlock;
+    k_popMandatoryQueue;
   }
 
   transition({S,E,M}, Ifetch) {
@@ -1275,12 +1275,12 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     hh_store_hit;
     uu_profileDataHit;
     po_observeHit;
-    k_popMandatoryQueue;
     forward_eviction_to_cpu;
     i_allocateTBE;
     ltp_deleteTrace; //ltp_action
     g_issuePUTX;   // send data, but hold in case forwarded request
     ff_deallocateL1CacheBlock;
+    k_popMandatoryQueue;
   }
 
 

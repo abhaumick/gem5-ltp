@@ -43,7 +43,7 @@ Data Structures
 */
 
 #define HASH_INIT 0xFFFFFFFF
-#define CONFIDENCE_COUNT 2
+#define CONFIDENCE_COUNT 0
 class LoggerLT : public Logger
 {
 public:

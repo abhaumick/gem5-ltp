@@ -12,11 +12,11 @@ gem5_args="${gem5_dir}/${gem5_config} -n ${gem5_nCores} --ruby"
 gem5_exec="build/ECE666/gem5.opt ${gem5_args}"
 
 # TODO add args for application and
-toy_exec="ubench-loadStore"
+toy_exec="ubench_loadStore"
 toy_exec_dir="project/bin"
 bm_name="toy-${toy_exec}"
 # toy_args="512 2 128 100 5"    ## LoaclConflict
-toy_args="4 4 4"      ## Load-Store
+toy_args="4 16 4"      ## Load-Store NUM_THREADS NUM_LOOPS TRACE_LEN
 
 
 bm_args="${run_args}"
