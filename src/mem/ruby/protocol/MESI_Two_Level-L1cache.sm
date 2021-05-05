@@ -287,16 +287,18 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
     }
   }
 
-  Event event_to_evict_event(Event request) {
-    if (request == Event:Load) {
+  Event event_to_evict_event(RubyRequestType requestType) {
+    if (requestType == RubyRequestType:LD) {
       return Event:Load_Evict;
-    } else if (request == Event:Store) {
+    } else if (requestType == RubyRequestType:ST) {
       return Event:Store_Evict;
-    }
-    else {
+    } else if (requestType == RubyRequestType:IFETCH) {
+      return Event:Ifetch;
+    } else if (requestType == RubyRequestType:ATOMIC) {
+      return Event:Store;
+    } else {
       error("Invalid event for Last Touch");
     }
-    return request;
   }
 
   Event prefetch_request_type_to_event(RubyRequestType type) {
@@ -403,12 +405,16 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
 
   // Response  L1 Network - response msg to this L1 cache
   in_port(responseL1Network_in, ResponseMsg, responseToL1Cache, rank = 2) {
+    // DPRINTF(RubySlicc, "L1 Resp Q - Before IF - \n");
     if (responseL1Network_in.isReady(clockEdge())) {
+      // DPRINTF(RubySlicc, "L1 Resp Q - Ready - \n");
       peek(responseL1Network_in, ResponseMsg, block_on="addr") {
         assert(in_msg.Destination.isElement(machineID));
 
         Entry cache_entry := getCacheEntry(in_msg.addr);
         TBE tbe := TBEs[in_msg.addr];
+
+        // DPRINTF(RubySlicc, "L1 Resp : %d\n", in_msg.Type);
 
         if(in_msg.Type == CoherenceResponseType:DATA_EXCLUSIVE) {
           trigger(Event:Data_Exclusive, in_msg.addr, cache_entry, tbe);
@@ -516,9 +522,11 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
           if (is_valid(L1Dcache_entry)) {
             // The tag matches for the L1, so the L1 ask the L2 for it
             Event evt := mandatory_request_type_to_event(in_msg.Type);
-            if (evt == Event:Load || evt == Event:Store) {
+            DPRINTF(RubySlicc, "mandatory req - %d\n", in_msg.Type);
+            if (in_msg.Type == RubyRequestType:LD || 
+              in_msg.Type == RubyRequestType:ST) {
               if (L1Dcache.checkLastTouch(in_msg.LineAddress, in_msg.ProgramCounter)) {
-                evt := event_to_evict_event(evt);
+                evt := event_to_evict_event(in_msg.Type);
               }
             }
             trigger(evt, in_msg.LineAddress,
@@ -950,6 +958,7 @@ machine(MachineType:L1Cache, "MESI Directory L1 Cache CMP")
 
   action(o_popIncomingResponseQueue, "o",
     desc="Pop Incoming Response queue and profile the delay within this virtual network") {
+    DPRINTF(RubySlicc, "o_popIncomingResponseQ .. it came. \n");
     Tick delay := responseL1Network_in.dequeue(clockEdge());
     profileMsgDelay(1, ticksToCycles(delay));
   }

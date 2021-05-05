@@ -18,6 +18,7 @@
 
 #include "base/logging.hh"
 #include "base/statistics.hh"
+#include "debug/RubySlicc.hh"
 #include "mem/cache/replacement_policies/base.hh"
 #include "mem/cache/replacement_policies/replaceable_entry.hh"
 #include "mem/ruby/common/DataBlock.hh"

@@ -49,6 +49,7 @@
 #include "debug/MemoryAccess.hh"
 #include "debug/ProtocolTrace.hh"
 #include "debug/RubySequencer.hh"
+#include "debug/RubySlicc.hh"
 #include "debug/RubyStats.hh"
 #include "mem/packet.hh"
 #include "mem/ruby/profiler/Profiler.hh"
@@ -461,6 +462,7 @@ Sequencer::writeCallback(Addr address, DataBlock& data,
                 // controller. This will block standard loads, stores, ifetches,
                 // etc.
                 m_controller->blockOnQueue(address, m_mandatory_q_ptr);
+                DPRINTF(RubySlicc, "Blocking on %x\n", address);
             } else if (seq_req.m_type == RubyRequestType_Locked_RMW_Write) {
                 m_controller->unblock(address);
             }
@@ -695,7 +697,7 @@ Sequencer::makeRequest(PacketPtr pkt)
             assert(pkt->isRead());
             primary_type = RubyRequestType_Locked_RMW_Read;
         }
-        secondary_type = RubyRequestType_ST;
+        secondary_type = RubyRequestType_ATOMIC;
     } else {
         //
         // To support SwapReq, we need to check isWrite() first: a SwapReq

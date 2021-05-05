@@ -129,9 +129,13 @@ void LTP::deallocateSignature(int64_t cacheSet, int loc)
   if (signature == NULL || signature == nullptr) {
     traceLog(logLT, "panik : deallocateSig : [%010d,%04d] null \n",
       cacheSet, loc);
+    DPRINTF(RubySlicc, "panik : deallocateSig : [%010d,%04d] null \n",
+      cacheSet, loc);
   }
   else {
     traceLog(logLT, "kalm  : deallocateSig : [%010d,%04d] \n",
+      cacheSet, loc);
+    DPRINTF(RubySlicc, "kalm  : deallocateSig : [%010d,%04d] \n",
       cacheSet, loc);
     delete (signature);
     m_signature_table[cacheSet][loc] = nullptr;
@@ -199,6 +203,8 @@ void LTP::endTrace(int64_t cacheSet, int loc)
     //deallocate completed signature
     traceLog(logLT, "kalm  : endTrace [%010d,%04d]\n",
       cacheSet, loc);
+    DPRINTF(RubySlicc, "kalm  : endTrace [%010d,%04d]\n",
+      cacheSet, loc);
     deallocateSignature(cacheSet, loc);
   }
 }
@@ -234,7 +240,8 @@ LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
             PCFlag = true;
             matchSize = histTrace->PCVector.size();
           }
-          if (histTrace->hash == tempSignature.hash) {
+          if (histTrace->hash == tempSignature.hash &&
+            histTrace->predCount == CONFIDENCE_COUNT) {
             hashFlag = true;
             hashMatchSize = tempSignature.PCVector.size();
             matchedHash = tempSignature.hash;
@@ -247,11 +254,17 @@ LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
   {
     traceLog(logLT, "panik : checkLastTouch [%010d,%04d] -- null warn\n",
       cacheSet, loc);
+    DPRINTF(RubySlicc, "panik : checkLastTouch [%010d,%04d] -- null warn\n",
+      cacheSet, loc);
   }
 
   if (PCFlag || hashFlag)
   {
     traceLog(logLT, "kalm  : PC Touch Match : %d - size %d , \
+      Hash Touch Match : %d = %x for [%010d,%04d] of size %d \n",
+      PCFlag, matchSize, hashFlag, matchedHash,
+      cacheSet, loc, hashMatchSize);
+    DPRINTF(RubySlicc, "kalm  : PC Touch Match : %d - size %d , \
       Hash Touch Match : %d = %x for [%010d,%04d] of size %d \n",
       PCFlag, matchSize, hashFlag, matchedHash,
       cacheSet, loc, hashMatchSize);
