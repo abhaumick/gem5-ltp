@@ -67,7 +67,7 @@ LTP::init (int num_sets, int assoc, int cache_id, bool log_enabled)
           std::vector<std::set<ltpTrace*>>(m_cache_assoc)); //verify
 
   traceLog(logLT, "resized to %d \n", m_cache_num_sets);
-  ltpTester();
+  //ltpTester();
 }
 
 /**
@@ -109,7 +109,7 @@ void LTP::appendSignature(int64_t cacheSet, int loc, Addr PC)
       cacheSet, loc);
   }
   else {
-    signature->PCVector.push_back(PC);
+    //signature->PCVector.push_back(PC);
     signature->hash = hashFunction(signature->hash, PC);
     signature->valid = true;
     traceLog(logLT, "kalm  : appendSig PC '%16x' to [%010d,%04d] \n",
@@ -167,8 +167,8 @@ void LTP::endTrace(int64_t cacheSet, int loc)
         else {
           if (histTrace->valid) {
             // True-> simply increment pred counter
-            if (histTrace->PCVector
-              == completedSignature->PCVector)
+            if (histTrace->hash
+              == completedSignature->hash)
             {
                if (histTrace->predCount < CONFIDENCE_COUNT)
               {
@@ -179,11 +179,7 @@ void LTP::endTrace(int64_t cacheSet, int loc)
               "End trace match. Pred counter: %d \n",
               histTrace->predCount);
             }
-            // if (histTrace->hash == completedSignature.hash) {
-            //     hashFlag = true;
-            //     hashMatchSize = tempSignature.PCVector.size();
-            //     matchedHash = tempSignature.hash;
-            // }
+
           }
         }
       }
@@ -191,9 +187,9 @@ void LTP::endTrace(int64_t cacheSet, int loc)
       if (!isPresent)
       {
         ltpTrace *signature = new ltpTrace;
-        traceLog(logLT, "New endTrace vector size %d \n",
-        completedSignature->PCVector.size());
-        signature->PCVector = completedSignature->PCVector;
+        // traceLog(logLT, "New endTrace vector size %d \n",
+        // completedSignature->PCVector.size());
+        // signature->PCVector = completedSignature->PCVector;
         signature->hash = completedSignature->hash;
         signature->valid = true;
         m_history_table[cacheSet][loc].insert(signature);
@@ -225,7 +221,7 @@ LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
     && m_signature_table[cacheSet][loc] != nullptr )
   {
     tempSignature = *m_signature_table[cacheSet][loc];
-    tempSignature.PCVector.push_back(PC);
+    //tempSignature.PCVector.push_back(PC);
     tempSignature.hash = hashFunction(tempSignature.hash, PC);
 
     //  Find matching trace in history
@@ -235,15 +231,15 @@ LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
       }
       else {
         if (histTrace->valid) {
-          if (histTrace->PCVector == tempSignature.PCVector &&
-            histTrace->predCount == CONFIDENCE_COUNT ) {
-            PCFlag = true;
-            matchSize = histTrace->PCVector.size();
-          }
+          // if (histTrace->PCVector == tempSignature.PCVector &&
+          //   histTrace->predCount == CONFIDENCE_COUNT ) {
+          //   PCFlag = true;
+          //   matchSize = histTrace->PCVector.size();
+          // }
           if (histTrace->hash == tempSignature.hash &&
             histTrace->predCount == CONFIDENCE_COUNT) {
             hashFlag = true;
-            hashMatchSize = tempSignature.PCVector.size();
+            //hashMatchSize = tempSignature.PCVector.size();
             matchedHash = tempSignature.hash;
           }
         }
@@ -258,7 +254,7 @@ LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
       cacheSet, loc);
   }
 
-  if (PCFlag || hashFlag)
+  if (hashFlag)
   {
     traceLog(logLT, "kalm  : PC Touch Match : %d - size %d , \
       Hash Touch Match : %d = %x for [%010d,%04d] of size %d \n",
@@ -274,7 +270,7 @@ LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
     //traceLog(logLT, "kalm  : Last Touch No Match Found! \n");
   }
 
-  return PCFlag;
+  return hashFlag;
 }
 
 
