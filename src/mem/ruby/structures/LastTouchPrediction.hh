@@ -33,18 +33,15 @@
 #include "params/RubyCache.hh"
 #include "sim/sim_object.hh"
 
-/*
-TODO
-
-Data Structures
-- signature table
-  - per line. Size = number of lines
-- local history table. 2-d array <number lines, linked list of traces>
-
-*/
-
 #define HASH_INIT 0xFFFFFFFF
-#define CONFIDENCE_COUNT 0
+
+//This count defines how many times a trace shoud
+// repeat before it is treated as a valid last touch trace.
+#define CONFIDENCE_COUNT 1
+
+//GLOBAL Flag is a hack to toggle between local and global history.
+//if GLOBAL, then use a single location for all traces.
+#define GLOBAL true
 class LoggerLT : public Logger
 {
 public:
@@ -112,7 +109,7 @@ public:
   void appendSignature(int64_t cacheSet, int loc, Addr PC);
   uint32_t  hashFunction(uint32_t A, uint32_t B);
   void deallocateSignature(int64_t cacheSet, int loc);
-  void endTrace(int64_t cacheSet, int loc);
+  bool endTrace(int64_t cacheSet, int loc);
   bool checkLastTouch(int64_t cacheSet, int loc, Addr PC);
   void ltpTester();
   std::string print() const;

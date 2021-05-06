@@ -249,6 +249,7 @@ class CacheMemory : public SimObject
           Stats::Formula m_prefetch_accesses;
 
           Stats::Vector m_accessModeType;
+          Stats::Scalar m_global_history_size;
       } cacheMemoryStats;
 
     public:

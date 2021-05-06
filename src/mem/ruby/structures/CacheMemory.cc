@@ -550,7 +550,8 @@ CacheMemoryStats::CacheMemoryStats(Stats::Group *parent)
       ADD_STAT(m_prefetch_misses, "Number of cache prefetch misses"),
       ADD_STAT(m_prefetch_accesses, "Number of cache prefetch accesses",
                m_prefetch_hits + m_prefetch_misses),
-      ADD_STAT(m_accessModeType, "")
+      ADD_STAT(m_accessModeType, ""),
+      ADD_STAT(m_global_history_size, "Max size of the global history table")
 {
     numDataArrayReads
         .flags(Stats::nozero);
@@ -592,8 +593,11 @@ CacheMemoryStats::CacheMemoryStats(Stats::Group *parent)
     m_prefetch_misses
         .flags(Stats::nozero);
 
-    m_prefetch_accesses
+    m_global_history_size
         .flags(Stats::nozero);
+
+    m_prefetch_misses
+          .flags(Stats::nozero);
 
     m_accessModeType
         .init(RubyRequestType_NUM)
@@ -790,7 +794,11 @@ CacheMemory::endTrace(Addr address)
             "panik : $ endTrace: not found %016x", address);
     }
     else {
-        m_ltp.endTrace(cacheSet, loc);
+        if (m_ltp.endTrace(cacheSet, loc)) {
+            if (GLOBAL){
+                cacheMemoryStats.m_global_history_size++;
+            }
+        }
     }
 }
 

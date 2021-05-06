@@ -64,7 +64,7 @@ LTP::init (int num_sets, int assoc, int cache_id, bool log_enabled)
   m_signature_table.resize(m_cache_num_sets,
           std::vector<ltpTrace*>(m_cache_assoc, nullptr));
   m_history_table.resize(m_cache_num_sets,
-          std::vector<std::set<ltpTrace*>>(m_cache_assoc)); //verify
+          std::vector<std::set<ltpTrace*>>(m_cache_assoc));
 
   traceLog(logLT, "resized to %d \n", m_cache_num_sets);
   //ltpTester();
@@ -145,13 +145,20 @@ void LTP::deallocateSignature(int64_t cacheSet, int loc)
 /**
  * @brief
  *
+ *
  * @param cacheSet
  * @param loc
  */
-void LTP::endTrace(int64_t cacheSet, int loc)
+bool LTP::endTrace(int64_t cacheSet, int loc)
 {
+  if (GLOBAL) {
+    cacheSet = 0;
+    loc = 0;
+  }
+
   ltpTrace *completedSignature = m_signature_table[cacheSet][loc];
   bool isPresent = false;
+  bool newTraceAdded = false;
   //Allocate a signature in history table and copy the ltpTrace
   if (completedSignature == NULL || completedSignature == nullptr) {
     traceLog(logLT, "panik : endTrace [%010d,%04d] -- null warn\n",
@@ -194,6 +201,7 @@ void LTP::endTrace(int64_t cacheSet, int loc)
         signature->valid = true;
         m_history_table[cacheSet][loc].insert(signature);
         traceLog(logLT, printHistoryTable(cacheSet, loc));
+        newTraceAdded = true;
       }
     }
     //deallocate completed signature
@@ -203,11 +211,17 @@ void LTP::endTrace(int64_t cacheSet, int loc)
       cacheSet, loc);
     deallocateSignature(cacheSet, loc);
   }
+  return newTraceAdded;
 }
 
 bool
 LTP::checkLastTouch(int64_t cacheSet, int loc, Addr PC)
 {
+   if (GLOBAL) {
+    cacheSet = 0;
+    loc = 0;
+  }
+
   std::set<ltpTrace*> traceHistory = m_history_table[cacheSet][loc];
   //check if current signature is in history.
   ltpTrace tempSignature;
