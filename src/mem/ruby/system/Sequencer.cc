@@ -697,7 +697,7 @@ Sequencer::makeRequest(PacketPtr pkt)
             assert(pkt->isRead());
             primary_type = RubyRequestType_Locked_RMW_Read;
         }
-        secondary_type = RubyRequestType_ATOMIC;
+        secondary_type = RubyRequestType_ST;
     } else {
         //
         // To support SwapReq, we need to check isWrite() first: a SwapReq

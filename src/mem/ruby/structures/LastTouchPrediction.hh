@@ -37,7 +37,7 @@
 
 //This count defines how many times a trace shoud
 // repeat before it is treated as a valid last touch trace.
-#define CONFIDENCE_COUNT 1
+#define CONFIDENCE_COUNT 0
 
 //GLOBAL Flag is a hack to toggle between local and global history.
 //if GLOBAL, then use a single location for all traces.
